@@ -295,6 +295,28 @@ def handle_test(body: dict) -> dict:
 
 
 # =============================================================================
+# WEBHOOK SETUP
+# =============================================================================
+
+def handle_set_webhook() -> dict:
+    """Устанавливает вебхук Telegram-бота на текущую функцию."""
+    webhook_url = "https://functions.poehali.dev/aee94186-9c12-42ba-9e6b-dd15aed466f9"
+    webhook_secret = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "")
+
+    bot = get_bot()
+    bot.remove_webhook()
+    result = bot.set_webhook(
+        url=webhook_url,
+        secret_token=webhook_secret if webhook_secret else None,
+    )
+
+    return cors_response(200, {
+        "success": result,
+        "webhook_url": webhook_url,
+    })
+
+
+# =============================================================================
 # MAIN HANDLER
 # =============================================================================
 
@@ -324,6 +346,8 @@ def handler(event: dict, context) -> dict:
             return handle_send_photo(body)
         elif action == "test" and method == "POST":
             return handle_test(body)
+        elif action == "set-webhook" and method == "POST":
+            return handle_set_webhook()
         else:
             return cors_response(400, {"error": f"Unknown action: {action}"})
 
