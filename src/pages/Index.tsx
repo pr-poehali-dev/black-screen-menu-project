@@ -294,29 +294,52 @@ const Index = () => {
         </div>
       </header>
 
-      <div className="px-3 pt-3">
-        <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: "16/7" }}>
-          {bannerSlides.map((slide, idx) => (
-            <img
-              key={idx}
-              src={slide.image}
-              alt=""
-              className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${idx === currentSlide ? "opacity-100" : "opacity-0"}`}
-            />
-          ))}
-          <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
-            {bannerSlides.map((_, idx) => (
-              <button
-                key={idx}
-                onClick={() => setCurrentSlide(idx)}
-                className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentSlide ? "bg-[#4ade80] w-4" : "bg-white/30"}`}
-              />
-            ))}
+      <div className="flex-1 overflow-y-auto">
+        {active === 1 && (
+          <div className="px-3 pt-3 pb-4">
+            <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: "16/7" }}>
+              {bannerSlides.map((slide, idx) => (
+                <img
+                  key={idx}
+                  src={slide.image}
+                  alt=""
+                  className={`absolute inset-0 w-full h-full object-cover transition-opacity duration-700 ${idx === currentSlide ? "opacity-100" : "opacity-0"}`}
+                />
+              ))}
+              <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex gap-1.5">
+                {bannerSlides.map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setCurrentSlide(idx)}
+                    className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentSlide ? "bg-[#4ade80] w-4" : "bg-white/30"}`}
+                  />
+                ))}
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
+        )}
 
-      <div className="flex-1" />
+        {active === 2 && (
+          <div className="flex flex-col items-center justify-center py-16 px-6">
+            <Icon name="Clover" size={48} className="text-[#4ade80]/30 mb-4" />
+            <span className="text-white/40 text-sm">Казино — скоро</span>
+          </div>
+        )}
+
+        {active === 3 && (
+          <div className="flex flex-col items-center justify-center py-16 px-6">
+            <Icon name="BadgeDollarSign" size={48} className="text-[#4ade80]/30 mb-4" />
+            <span className="text-white/40 text-sm">Free money — скоро</span>
+          </div>
+        )}
+
+        {active === 4 && (
+          <div className="flex flex-col items-center justify-center py-16 px-6">
+            <Icon name="Briefcase" size={48} className="text-[#4ade80]/30 mb-4" />
+            <span className="text-white/40 text-sm">Кейсы — скоро</span>
+          </div>
+        )}
+      </div>
 
       <nav className="w-full px-4 pb-6 pt-3">
         <div className="flex items-center justify-around">
