@@ -69,6 +69,14 @@ def handler(event, context):
         }
 
     token = os.environ.get("CRYPTOBOT_API_TOKEN", "")
+    if not token:
+        return {
+            "statusCode": 500,
+            "headers": cors,
+            "body": json.dumps({"error": "Токен CryptoBot не настроен"}),
+        }
+
+    api_url = os.environ.get("CRYPTOBOT_API_URL", "https://testnet-pay.crypt.bot/api")
 
     payload = json.dumps({
         "currency_type": "crypto",
@@ -79,7 +87,7 @@ def handler(event, context):
     }).encode("utf-8")
 
     req = urllib.request.Request(
-        f"{CRYPTOBOT_API_URL}/createInvoice",
+        f"{api_url}/createInvoice",
         data=payload,
         headers={
             "Crypto-Pay-API-Token": token,
@@ -93,10 +101,18 @@ def handler(event, context):
             result = json.loads(resp.read().decode("utf-8"))
     except urllib.error.HTTPError as e:
         error_body = e.read().decode("utf-8")
+        print(f"CryptoBot API error: {e.code} {error_body}")
         return {
             "statusCode": 502,
             "headers": cors,
             "body": json.dumps({"error": "Ошибка CryptoBot", "details": error_body}),
+        }
+    except Exception as e:
+        print(f"CryptoBot request error: {str(e)}")
+        return {
+            "statusCode": 502,
+            "headers": cors,
+            "body": json.dumps({"error": "Ошибка соединения с CryptoBot"}),
         }
 
     if not result.get("ok"):
