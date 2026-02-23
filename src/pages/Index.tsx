@@ -19,9 +19,11 @@ const Index = () => {
           <div className="text-white font-bold text-lg tracking-wide">LOGO</div>
           <div className="flex items-center bg-[#2a2a3e] rounded-full pl-1 pr-1 py-1 gap-1">
             <div className="flex items-center gap-1.5 pl-1 pr-2">
-              <div className="w-6 h-6 rounded-full bg-[#26a17b] flex items-center justify-center shrink-0">
-                <span className="text-white font-bold text-[10px]">₮</span>
-              </div>
+              <img
+                src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/205c3f8a-d2ba-450b-a973-b1dd08565edd.jpg"
+                alt="USDT"
+                className="w-6 h-6 rounded-full shrink-0 object-cover"
+              />
               <span className="text-white font-semibold text-xs">0</span>
               <Icon name="ChevronDown" size={12} className="text-gray-400" />
             </div>
