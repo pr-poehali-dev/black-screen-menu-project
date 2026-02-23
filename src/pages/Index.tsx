@@ -104,7 +104,7 @@ const Index = () => {
   }
 
   if (!isAuthed) {
-    return <AuthScreen onAuth={() => {}} />;
+    return <AuthScreen onAuth={() => window.location.reload()} />;
   }
 
   return (
