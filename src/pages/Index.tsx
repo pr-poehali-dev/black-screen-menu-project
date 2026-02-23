@@ -20,6 +20,7 @@ import { useTelegramAuth } from "@/components/extensions/telegram-bot/useTelegra
 
 const AUTH_URL = "https://functions.poehali.dev/92e35473-1c53-44e8-b2d8-d769976a894c";
 const TG_AUTH_URL = "https://functions.poehali.dev/420b5ea1-6f3d-420d-bb72-398ac6d4f617";
+const CRYPTO_PAY_URL = "https://functions.poehali.dev/892f6456-5e1e-4974-9df1-9e4ce3603ae9";
 const TG_BOT_USERNAME = "Jaguar_Official_bot";
 
 const navItems = [
@@ -66,6 +67,7 @@ const Index = () => {
   const [cryptoPayOpen, setCryptoPayOpen] = useState(false);
   const [depositAmount, setDepositAmount] = useState("5");
   const [depositError, setDepositError] = useState("");
+  const [depositLoading, setDepositLoading] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -373,7 +375,8 @@ const Index = () => {
 
           <div className="px-4 pt-6">
             <button
-              onClick={() => {
+              disabled={depositLoading}
+              onClick={async () => {
                 const amount = parseFloat(depositAmount);
                 if (!depositAmount || isNaN(amount)) {
                   setDepositError("Введите сумму");
@@ -388,10 +391,30 @@ const Index = () => {
                   return;
                 }
                 setDepositError("");
+                setDepositLoading(true);
+                try {
+                  const res = await fetch(CRYPTO_PAY_URL, {
+                    method: "POST",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ amount }),
+                  });
+                  const data = await res.json();
+                  if (!res.ok) {
+                    setDepositError(data.error || "Ошибка создания платежа");
+                    return;
+                  }
+                  if (data.pay_url) {
+                    window.open(data.pay_url, "_blank");
+                  }
+                } catch {
+                  setDepositError("Ошибка соединения с сервером");
+                } finally {
+                  setDepositLoading(false);
+                }
               }}
-              className="w-full bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-3.5 active:bg-[#3ecb6e] transition-colors"
+              className="w-full bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-3.5 active:bg-[#3ecb6e] transition-colors disabled:opacity-50"
             >
-              Пополнить {depositAmount || "0"} USDT
+              {depositLoading ? "Создаём платёж..." : `Пополнить ${depositAmount || "0"} USDT`}
             </button>
           </div>
         </div>

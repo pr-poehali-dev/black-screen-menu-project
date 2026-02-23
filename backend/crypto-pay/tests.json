@@ -1,0 +1,32 @@
+{
+  "tests": [
+    {
+      "name": "OPTIONS preflight",
+      "method": "OPTIONS",
+      "path": "/",
+      "expectedStatus": 200
+    },
+    {
+      "name": "GET not allowed",
+      "method": "GET",
+      "path": "/",
+      "expectedStatus": 405
+    },
+    {
+      "name": "POST without amount",
+      "method": "POST",
+      "path": "/",
+      "headers": {"Content-Type": "application/json"},
+      "body": "{}",
+      "expectedStatus": 400
+    },
+    {
+      "name": "POST with low amount",
+      "method": "POST",
+      "path": "/",
+      "headers": {"Content-Type": "application/json"},
+      "body": "{\"amount\": 2}",
+      "expectedStatus": 400
+    }
+  ]
+}
