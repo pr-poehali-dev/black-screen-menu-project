@@ -125,7 +125,7 @@ const Index = () => {
               </div>
               <div className="flex flex-col items-start">
                 <span className="text-white font-bold text-base">{currentUser?.name || currentUser?.email || "Игрок"}</span>
-                <span className="text-white/40 text-xs">ID {currentUser?.id || "—"}</span>
+                <span className="text-white/40 text-xs">ID {currentUser?.display_id || currentUser?.id || "—"}</span>
               </div>
               <Icon name="ChevronRight" size={18} className="text-white/30 ml-auto" />
             </button>
@@ -174,7 +174,7 @@ const Index = () => {
             <span className="text-lg font-bold text-white">{currentUser?.name || currentUser?.email || "Игрок"}</span>
             <div className="flex items-center gap-1.5 mt-0.5">
               <Icon name="Copy" size={12} className="text-white/30" />
-              <span className="text-[12px] text-white/40">ID {currentUser?.id || "—"}</span>
+              <span className="text-[12px] text-white/40">ID {currentUser?.display_id || currentUser?.id || "—"}</span>
             </div>
           </div>
 

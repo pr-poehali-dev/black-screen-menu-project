@@ -120,7 +120,7 @@ def find_user_by_telegram_id(cursor, telegram_id: str) -> Optional[dict]:
     """Find user by Telegram ID."""
     schema = get_schema()
     cursor.execute(f"""
-        SELECT id, email, name, avatar_url, telegram_id
+        SELECT id, email, name, avatar_url, telegram_id, display_id
         FROM {schema}users
         WHERE telegram_id = %s
     """, (telegram_id,))
@@ -133,6 +133,7 @@ def find_user_by_telegram_id(cursor, telegram_id: str) -> Optional[dict]:
             "name": row[2],
             "avatar_url": row[3],
             "telegram_id": row[4],
+            "display_id": row[5],
         }
     return None
 
@@ -168,14 +169,14 @@ def create_or_update_user(
                 last_login_at = NOW(),
                 updated_at = NOW()
             WHERE telegram_id = %s
-            RETURNING id, email, name, avatar_url, telegram_id
+            RETURNING id, email, name, avatar_url, telegram_id, display_id
         """, (display_name, photo_url, telegram_id))
     else:
         # Create new user
         cursor.execute(f"""
             INSERT INTO {schema}users (telegram_id, name, avatar_url, email_verified, password_hash, created_at, updated_at, last_login_at)
             VALUES (%s, %s, %s, TRUE, '', NOW(), NOW(), NOW())
-            RETURNING id, email, name, avatar_url, telegram_id
+            RETURNING id, email, name, avatar_url, telegram_id, display_id
         """, (telegram_id, display_name, photo_url))
 
     row = cursor.fetchone()
@@ -185,6 +186,7 @@ def create_or_update_user(
         "name": row[2],
         "avatar_url": row[3],
         "telegram_id": row[4],
+        "display_id": row[5],
     }
 
 
@@ -222,7 +224,7 @@ def get_user_by_id(cursor, user_id: int) -> Optional[dict]:
     """Get user by ID."""
     schema = get_schema()
     cursor.execute(f"""
-        SELECT id, email, name, avatar_url, telegram_id
+        SELECT id, email, name, avatar_url, telegram_id, display_id
         FROM {schema}users WHERE id = %s
     """, (user_id,))
 
@@ -234,6 +236,7 @@ def get_user_by_id(cursor, user_id: int) -> Optional[dict]:
             "name": row[2],
             "avatar_url": row[3],
             "telegram_id": row[4],
+            "display_id": row[5],
         }
     return None
 

@@ -32,7 +32,7 @@ def handle(event: dict, origin: str = '*') -> dict:
     S = get_schema()
 
     result = query_one(f"""
-        SELECT rt.id, u.email, u.name
+        SELECT rt.id, u.email, u.name, u.display_id
         FROM {S}refresh_tokens rt
         JOIN {S}users u ON u.id = rt.user_id
         WHERE rt.token_hash = {escape(token_hash)}
@@ -43,7 +43,7 @@ def handle(event: dict, origin: str = '*') -> dict:
     if not result:
         return error(401, 'Refresh token revoked or expired', origin)
 
-    _, user_email, user_name = result
+    _, user_email, user_name, display_id = result
     access_token = create_access_token(user_id, user_email)
 
     return response(200, {
@@ -52,6 +52,7 @@ def handle(event: dict, origin: str = '*') -> dict:
         'expires_in': ACCESS_TOKEN_EXPIRE_MINUTES * 60,
         'user': {
             'id': user_id,
+            'display_id': display_id,
             'email': user_email,
             'name': user_name
         }
