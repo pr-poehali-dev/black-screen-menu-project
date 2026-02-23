@@ -1,6 +1,9 @@
-import { useState } from "react";
+import { useState, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 import AuthScreen from "@/components/AuthScreen";
+import { useAuth } from "@/components/extensions/auth-email/useAuth";
+
+const AUTH_URL = "https://functions.poehali.dev/92e35473-1c53-44e8-b2d8-d769976a894c";
 
 const navItems = [
   { icon: "Menu", label: "Меню" },
@@ -39,10 +42,26 @@ const profileSections = [
 ];
 
 const Index = () => {
-  const [isAuthed, setIsAuthed] = useState(false);
   const [active, setActive] = useState(1);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+
+  const auth = useAuth({
+    apiUrls: {
+      login: `${AUTH_URL}?action=login`,
+      register: `${AUTH_URL}?action=register`,
+      verifyEmail: `${AUTH_URL}?action=verify-email`,
+      refresh: `${AUTH_URL}?action=refresh`,
+      logout: `${AUTH_URL}?action=logout`,
+      resetPassword: `${AUTH_URL}?action=reset-password`,
+    },
+  });
+
+  const handleLogout = useCallback(async () => {
+    await auth.logout();
+    setProfileOpen(false);
+    setMenuOpen(false);
+  }, [auth]);
 
   const handleNavClick = (index: number) => {
     if (index === 0) {
@@ -57,8 +76,18 @@ const Index = () => {
     setProfileOpen(true);
   };
 
-  if (!isAuthed) {
-    return <AuthScreen onAuth={() => setIsAuthed(true)} />;
+  if (auth.isLoading) {
+    return (
+      <div className="fixed inset-0 bg-black flex items-center justify-center">
+        <div className="text-[#4ade80] font-extrabold text-2xl tracking-wide uppercase animate-pulse">
+          Jaguar Casino
+        </div>
+      </div>
+    );
+  }
+
+  if (!auth.isAuthenticated) {
+    return <AuthScreen onAuth={() => {}} />;
   }
 
   return (
@@ -78,8 +107,8 @@ const Index = () => {
                 <Icon name="User" size={24} className="text-[#4ade80]/70" />
               </div>
               <div className="flex flex-col items-start">
-                <span className="text-white font-bold text-base">Игрок</span>
-                <span className="text-white/40 text-xs">ID 000000</span>
+                <span className="text-white font-bold text-base">{auth.user?.name || auth.user?.email || "Игрок"}</span>
+                <span className="text-white/40 text-xs">ID {auth.user?.id || "—"}</span>
               </div>
               <Icon name="ChevronRight" size={18} className="text-white/30 ml-auto" />
             </button>
@@ -125,10 +154,10 @@ const Index = () => {
           </div>
 
           <div className="flex flex-col items-center pt-3 pb-4">
-            <span className="text-lg font-bold text-white">Серия</span>
+            <span className="text-lg font-bold text-white">{auth.user?.name || auth.user?.email || "Игрок"}</span>
             <div className="flex items-center gap-1.5 mt-0.5">
               <Icon name="Copy" size={12} className="text-white/30" />
-              <span className="text-[12px] text-white/40">ID 334654318</span>
+              <span className="text-[12px] text-white/40">ID {auth.user?.id || "—"}</span>
             </div>
           </div>
 
@@ -179,7 +208,15 @@ const Index = () => {
             </div>
           ))}
 
-          <div className="pb-8" />
+          <div className="px-4 pt-4 pb-8">
+            <button
+              onClick={handleLogout}
+              className="w-full flex items-center justify-center gap-2 bg-red-500/10 border border-red-500/20 text-red-400 font-semibold text-[13px] rounded-xl py-3"
+            >
+              <Icon name="LogOut" size={16} />
+              Выйти из аккаунта
+            </button>
+          </div>
         </div>
       )}
 
