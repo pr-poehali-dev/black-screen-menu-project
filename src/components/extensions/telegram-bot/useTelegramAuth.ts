@@ -14,6 +14,7 @@ const REFRESH_TOKEN_KEY = "telegram_auth_refresh_token";
 
 export interface User {
   id: number;
+  display_id?: number;
   email: string | null;
   name: string | null;
   avatar_url: string | null;

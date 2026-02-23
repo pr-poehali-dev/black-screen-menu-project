@@ -27,6 +27,7 @@ const REFRESH_TOKEN_KEY = "auth_refresh_token";
 
 export interface User {
   id: number;
+  display_id?: number;
   email: string;
   name: string | null;
   email_verified?: boolean;
