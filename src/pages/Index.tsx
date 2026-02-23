@@ -36,7 +36,6 @@ const Index = () => {
               />
             </div>
             <span className="text-white text-xs font-medium">0</span>
-            <Icon name="ChevronDown" size={12} className="text-white/30" />
           </div>
           <button className="flex items-center gap-1.5 bg-white text-black text-xs font-semibold rounded-full px-4 py-2 hover:bg-white/90 active:bg-white/80 transition-colors">
             <Icon name="Plus" size={14} />
