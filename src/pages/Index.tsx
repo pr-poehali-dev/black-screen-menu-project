@@ -1,4 +1,8 @@
 import { useState, useCallback } from "react";
+
+const copyId = (id: string | number) => {
+  navigator.clipboard.writeText(String(id));
+};
 import Icon from "@/components/ui/icon";
 import AuthScreen from "@/components/AuthScreen";
 import { useAuth } from "@/components/extensions/auth-email/useAuth";
@@ -172,10 +176,13 @@ const Index = () => {
 
           <div className="flex flex-col items-center pt-3 pb-4">
             <span className="text-lg font-bold text-white">{currentUser?.name || currentUser?.email || "Игрок"}</span>
-            <div className="flex items-center gap-1.5 mt-0.5">
+            <button
+              onClick={() => copyId(currentUser?.display_id || currentUser?.id || "")}
+              className="flex items-center gap-1.5 mt-0.5 active:opacity-60 transition-opacity"
+            >
               <Icon name="Copy" size={12} className="text-white/30" />
               <span className="text-[12px] text-white/40">ID {currentUser?.display_id || currentUser?.id || "—"}</span>
-            </div>
+            </button>
           </div>
 
           <div className="px-4 pb-3">
