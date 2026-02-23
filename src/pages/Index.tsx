@@ -15,18 +15,18 @@ const Index = () => {
   return (
     <div className="w-full flex flex-col touch-manipulation" style={{ minHeight: "100svh" }}>
       <div className="flex-1 bg-background">
-        <div className="px-4 pt-4">
-          <div className="flex items-center bg-[#1c1c1e] rounded-full px-2 py-2 w-fit gap-3">
+        <div className="px-4 pt-4 flex justify-end">
+          <div className="flex items-center bg-[#1c1c1e] rounded-full px-1.5 py-1.5 w-fit gap-2">
             <div className="flex items-center gap-2">
-              <div className="w-9 h-9 rounded-full bg-[#26a17b] flex items-center justify-center">
-                <span className="text-white font-bold text-sm">₮</span>
+              <div className="w-7 h-7 rounded-full bg-[#26a17b] flex items-center justify-center">
+                <span className="text-white font-bold text-xs">₮</span>
               </div>
-              <span className="text-white font-semibold text-base">0</span>
-              <Icon name="ChevronDown" size={16} className="text-gray-400" />
+              <span className="text-white font-semibold text-sm">0</span>
+              <Icon name="ChevronDown" size={14} className="text-gray-400" />
             </div>
             <div className="h-6 w-px bg-gray-700" />
-            <button className="flex items-center gap-2 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors text-white font-semibold rounded-full px-5 py-2">
-              <Icon name="PlusSquare" size={18} className="text-white" />
+            <button className="flex items-center gap-1.5 bg-blue-500 hover:bg-blue-600 active:bg-blue-700 transition-colors text-white font-medium text-sm rounded-full px-4 py-1.5">
+              <Icon name="PlusSquare" size={15} className="text-white" />
               Пополнить
             </button>
           </div>
