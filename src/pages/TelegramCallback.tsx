@@ -3,7 +3,7 @@ import { useSearchParams, useNavigate } from "react-router-dom";
 import { useTelegramAuth } from "@/components/extensions/telegram-bot/useTelegramAuth";
 
 const TG_AUTH_URL = "https://functions.poehali.dev/420b5ea1-6f3d-420d-bb72-398ac6d4f617";
-const TG_BOT_USERNAME = "JaguarRrBot";
+const TG_BOT_USERNAME = "Jaguar_Official_bot";
 
 const TelegramCallback = () => {
   const [searchParams] = useSearchParams();

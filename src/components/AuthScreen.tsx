@@ -5,7 +5,7 @@ import { useTelegramAuth } from "@/components/extensions/telegram-bot/useTelegra
 
 const AUTH_URL = "https://functions.poehali.dev/92e35473-1c53-44e8-b2d8-d769976a894c";
 const TG_AUTH_URL = "https://functions.poehali.dev/420b5ea1-6f3d-420d-bb72-398ac6d4f617";
-const TG_BOT_USERNAME = "JaguarRrBot";
+const TG_BOT_USERNAME = "Jaguar_Official_bot";
 
 interface AuthScreenProps {
   onAuth: () => void;
