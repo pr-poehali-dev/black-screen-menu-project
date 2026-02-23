@@ -1,5 +1,6 @@
 import { useState } from "react";
 import Icon from "@/components/ui/icon";
+import AuthScreen from "@/components/AuthScreen";
 
 const navItems = [
   { icon: "Menu", label: "Меню" },
@@ -38,6 +39,7 @@ const profileSections = [
 ];
 
 const Index = () => {
+  const [isAuthed, setIsAuthed] = useState(false);
   const [active, setActive] = useState(1);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
@@ -54,6 +56,10 @@ const Index = () => {
     setMenuOpen(false);
     setProfileOpen(true);
   };
+
+  if (!isAuthed) {
+    return <AuthScreen onAuth={() => setIsAuthed(true)} />;
+  }
 
   return (
     <div className="w-full flex flex-col touch-manipulation relative" style={{ minHeight: "100svh" }}>
