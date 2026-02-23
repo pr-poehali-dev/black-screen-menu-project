@@ -24,7 +24,6 @@ const profileSections = [
   },
   {
     items: [
-      { icon: "Clock", label: "История ставок", desc: "Открытые и рассчитанные" },
       { icon: "Coins", label: "История платежей", desc: "Статусы депозитов и выводов", fallback: "Wallet" },
     ],
   },
