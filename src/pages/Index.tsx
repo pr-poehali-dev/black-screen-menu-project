@@ -142,7 +142,7 @@ const Index = () => {
 
           {profileSections.map((section, sIdx) => (
             <div key={sIdx} className="px-4 pb-2">
-              <div className="bg-white/5 border border-white/10 rounded-xl overflow-hidden">
+              <div className="bg-white/5 border border-[#4ade80]/20 rounded-xl overflow-hidden">
                 {section.items.map((item, iIdx) => (
                   <div key={item.label}>
                     <button className="w-full flex items-center gap-3 px-4 py-3">
