@@ -21,9 +21,9 @@ const Index = () => {
             alt="Logo"
             className="h-10 w-auto object-contain"
           />
-          <div className="flex flex-col leading-none">
-            <span className="text-[#4ade80] font-extrabold text-sm tracking-wide uppercase">Jaguar</span>
-            <span className="text-white font-extrabold text-[8px] tracking-[0.35em] uppercase pl-[1.85em]">casino</span>
+          <div className="flex flex-col leading-none items-end">
+            <span className="text-[#4ade80] font-extrabold text-sm tracking-wide uppercase self-start">Jaguar</span>
+            <span className="text-white font-extrabold text-[8px] tracking-[0.35em] uppercase">casino</span>
           </div>
         </div>
         <div className="flex items-center gap-2">
