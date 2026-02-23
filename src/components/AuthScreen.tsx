@@ -1,8 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Icon from "@/components/ui/icon";
 import { useAuth } from "@/components/extensions/auth-email/useAuth";
+import { useTelegramAuth } from "@/components/extensions/telegram-bot/useTelegramAuth";
 
 const AUTH_URL = "https://functions.poehali.dev/92e35473-1c53-44e8-b2d8-d769976a894c";
+const TG_AUTH_URL = "https://functions.poehali.dev/420b5ea1-6f3d-420d-bb72-398ac6d4f617";
+const TG_BOT_USERNAME = "JaguarRrBot";
 
 interface AuthScreenProps {
   onAuth: () => void;
@@ -37,7 +40,28 @@ const AuthScreen = ({ onAuth }: AuthScreenProps) => {
     },
   });
 
-  const displayError = auth.error || localError;
+  const tgAuth = useTelegramAuth({
+    apiUrls: {
+      callback: `${TG_AUTH_URL}?action=callback`,
+      refresh: `${TG_AUTH_URL}?action=refresh`,
+      logout: `${TG_AUTH_URL}?action=logout`,
+    },
+    botUsername: TG_BOT_USERNAME,
+    onAuthChange: (user) => {
+      if (user) onAuth();
+    },
+  });
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const token = params.get("token");
+    if (token) {
+      window.history.replaceState({}, "", window.location.pathname);
+      tgAuth.handleCallback(token);
+    }
+  }, []);
+
+  const displayError = auth.error || tgAuth.error || localError;
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -259,6 +283,23 @@ const AuthScreen = ({ onAuth }: AuthScreenProps) => {
                 <p className="text-white/25 text-[11px] text-center mt-2 leading-relaxed">Регистрируясь, вы подтверждаете, что вам исполнилось 18 лет и вы принимаете условия использования</p>
               </form>
             )}
+
+            <div className="w-full flex items-center gap-3 mt-5 mb-3">
+              <div className="flex-1 h-px bg-white/10" />
+              <span className="text-white/30 text-xs">или</span>
+              <div className="flex-1 h-px bg-white/10" />
+            </div>
+
+            <button
+              onClick={() => tgAuth.login()}
+              disabled={tgAuth.isLoading}
+              className="w-full flex items-center justify-center gap-2.5 bg-[#0088cc] text-white font-bold text-sm rounded-xl py-3.5 hover:bg-[#0077b5] active:bg-[#006699] transition-colors disabled:opacity-50"
+            >
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" fill="currentColor" className="w-5 h-5">
+                <path d="M16 8A8 8 0 1 1 0 8a8 8 0 0 1 16 0M8.287 5.906q-1.168.486-4.666 2.01-.567.225-.595.442c-.03.243.275.339.69.47l.175.055c.408.133.958.288 1.243.294q.39.01.868-.32 3.269-2.206 3.374-2.23c.05-.012.12-.026.166.016s.042.12.037.141c-.03.129-1.227 1.241-1.846 1.817-.193.18-.33.307-.358.336a8 8 0 0 1-.188.186c-.38.366-.664.64.015 1.088.327.216.589.393.85.571.284.194.568.387.936.629q.14.092.27.187c.331.236.63.448.997.414.214-.02.435-.22.547-.82.265-1.417.786-4.486.906-5.751a1.4 1.4 0 0 0-.013-.315.34.34 0 0 0-.114-.217.53.53 0 0 0-.31-.093c-.3.005-.763.166-2.984 1.09" />
+              </svg>
+              {tgAuth.isLoading ? "Загрузка..." : "Войти через Telegram"}
+            </button>
           </>
         )}
       </div>
