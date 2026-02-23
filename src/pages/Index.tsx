@@ -16,7 +16,7 @@ const Index = () => {
     <div className="w-full flex flex-col touch-manipulation" style={{ minHeight: "100svh" }}>
       <div className="flex-1 bg-background" />
 
-      <nav className="w-full bg-[#1a1a2e] px-3 pb-6 pt-3">
+      <nav className="w-full bg-background px-3 pb-6 pt-3">
         <div className="flex items-center justify-around gap-2">
           {navItems.map((item, index) => (
             <button
