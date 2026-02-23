@@ -128,7 +128,7 @@ const Index = () => {
           <div className="px-4 pb-4">
             <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
               <span className="text-[13px] text-white/40">Счет</span>
-              <div className="text-[26px] font-bold text-white mt-1 tracking-tight">0,000000 TON</div>
+              <div className="text-[26px] font-bold text-white mt-1 tracking-tight">0.00 USDT</div>
               <div className="flex gap-3 mt-4">
                 <button className="flex-1 flex items-center justify-center gap-2 bg-[#4ade80] text-black font-semibold text-[15px] rounded-xl py-3.5">
                   <Icon name="Plus" size={18} />
