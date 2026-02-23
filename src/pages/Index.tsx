@@ -13,6 +13,7 @@ const menuItems = [
   { icon: "Spade", label: "Казино", fallback: "Clover" },
   { icon: "Briefcase", label: "Кейсы" },
   { icon: "Gift", label: "Бонусы" },
+  { icon: "Users", label: "Реферальная система" },
   { icon: "Headphones", label: "Поддержка 24/7" },
 ];
 
