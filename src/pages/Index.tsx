@@ -63,6 +63,8 @@ const Index = () => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
   const [depositOpen, setDepositOpen] = useState(false);
+  const [cryptoPayOpen, setCryptoPayOpen] = useState(false);
+  const [depositAmount, setDepositAmount] = useState("5");
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -279,7 +281,10 @@ const Index = () => {
           </div>
 
           <div className="px-4 pt-4 flex flex-col gap-3">
-            <button className="w-full flex items-center gap-3 bg-[#1a1a1a] border border-white/10 rounded-2xl px-4 py-3 active:bg-white/5 transition-colors relative">
+            <button
+              onClick={() => { setDepositOpen(false); setCryptoPayOpen(true); setDepositAmount("5"); }}
+              className="w-full flex items-center gap-3 bg-[#1a1a1a] border border-white/10 rounded-2xl px-4 py-3 active:bg-white/5 transition-colors relative"
+            >
               <div className="absolute top-2.5 left-2.5">
                 <div className="w-5 h-5 rounded-md bg-[#4ade80]/15 flex items-center justify-center">
                   <Icon name="Zap" size={12} className="text-[#4ade80]" />
@@ -294,9 +299,83 @@ const Index = () => {
               </div>
               <div className="flex flex-col items-start flex-1 min-w-0">
                 <span className="text-white font-bold text-[15px]">@CryptoBot</span>
-                <span className="text-white/40 text-[12px]">от 10 до 5000</span>
+                <span className="text-white/40 text-[12px]">от 5 до 5000</span>
               </div>
               <Icon name="ChevronRight" size={18} className="text-white/30 shrink-0" />
+            </button>
+          </div>
+        </div>
+      )}
+
+      {cryptoPayOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col overflow-y-auto">
+          <div className="flex items-center justify-between px-5 pt-4 pb-2">
+            <button
+              onClick={() => { setCryptoPayOpen(false); setDepositOpen(true); }}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+            >
+              <Icon name="ArrowLeft" size={16} className="text-white/60" />
+            </button>
+            <h1 className="text-[18px] font-bold text-white">Пополнение</h1>
+            <button
+              onClick={() => setCryptoPayOpen(false)}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+            >
+              <Icon name="X" size={16} className="text-white/60" />
+            </button>
+          </div>
+
+          <div className="px-4 pt-4">
+            <div className="bg-[#111] border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-3">
+              <div className="w-[52px] h-[52px] rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0 overflow-hidden">
+                <img
+                  src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/4f68fa41-4b39-404a-9c4e-8c337614b5d1.jpg"
+                  alt="CryptoBot"
+                  className="w-[36px] h-[36px] rounded-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-white font-bold text-[15px]">@CryptoBot</span>
+                <span className="text-white/40 text-[13px]">от 5USDT до 5000USDT</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-4 pt-5">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-white/70 text-[14px] font-medium">Вы платите</span>
+              <span className="text-white/30 text-[12px]">Минимальная сумма: 5USDT</span>
+            </div>
+            <div className="bg-[#111] border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full shrink-0 overflow-hidden">
+                <img
+                  src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/521d6370-ca4b-47aa-9be0-a7e2edc0027f.jpg"
+                  alt="USDT"
+                  className="w-full h-full object-cover scale-[1.8]"
+                />
+              </div>
+              <span className="text-white font-bold text-[15px]">USDT</span>
+              <input
+                type="number"
+                inputMode="decimal"
+                value={depositAmount}
+                onChange={(e) => setDepositAmount(e.target.value)}
+                className="ml-auto bg-transparent text-white text-right text-[20px] font-bold w-[120px] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                min="5"
+                max="5000"
+              />
+            </div>
+          </div>
+
+          <div className="px-4 pt-6">
+            <button
+              onClick={() => {
+                const amount = parseFloat(depositAmount);
+                if (isNaN(amount) || amount < 5 || amount > 5000) return;
+              }}
+              className="w-full bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-3.5 active:bg-[#3ecb6e] transition-colors"
+            >
+              Пополнить {depositAmount || "0"} USDT
             </button>
           </div>
         </div>
