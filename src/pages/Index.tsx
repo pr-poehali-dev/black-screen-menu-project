@@ -287,7 +287,7 @@ const Index = () => {
               </div>
               <div className="w-[52px] h-[52px] rounded-xl bg-[#2a2a2a] flex items-center justify-center shrink-0 overflow-hidden">
                 <img
-                  src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/66fda89c-0aaf-450c-b119-864ef093f773.jpg"
+                  src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/4f68fa41-4b39-404a-9c4e-8c337614b5d1.jpg"
                   alt="CryptoBot"
                   className="w-[36px] h-[36px] rounded-full object-cover"
                 />
@@ -296,9 +296,7 @@ const Index = () => {
                 <span className="text-white font-bold text-[15px]">@CryptoBot</span>
                 <span className="text-white/40 text-[12px]">от 10 до 5000</span>
               </div>
-              <div className="bg-[#4ade80]/15 rounded-full px-3 py-1 shrink-0">
-                <span className="text-[#4ade80] text-[12px] font-semibold">+5% Наличные</span>
-              </div>
+              <Icon name="ChevronRight" size={18} className="text-white/30 shrink-0" />
             </button>
           </div>
         </div>
