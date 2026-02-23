@@ -107,70 +107,61 @@ const Index = () => {
 
       {profileOpen && (
         <div className="fixed inset-0 z-50 bg-black flex flex-col overflow-y-auto">
-          <div className="flex items-center justify-between px-5 pt-4 pb-2">
-            <h1 className="text-[22px] font-bold text-white">Профиль</h1>
+          <div className="flex items-center justify-between px-5 pt-5 pb-3">
+            <h1 className="text-lg font-semibold text-white">Профиль</h1>
             <button
               onClick={() => setProfileOpen(false)}
-              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+              className="w-8 h-8 flex items-center justify-center"
             >
-              <Icon name="X" size={16} className="text-white/60" />
+              <Icon name="X" size={18} className="text-white/50" />
             </button>
           </div>
 
-          <div className="flex flex-col items-center pt-4 pb-6">
-            <span className="text-[22px] font-bold text-white">Серия</span>
-            <div className="flex items-center gap-1.5 mt-1">
-              <Icon name="Copy" size={14} className="text-white/30" />
-              <span className="text-[13px] text-white/40">ID 334654318</span>
+          <div className="flex flex-col items-center pt-2 pb-5">
+            <div className="w-14 h-14 rounded-full border border-white/10 flex items-center justify-center mb-3">
+              <Icon name="User" size={26} className="text-white/30" />
+            </div>
+            <span className="text-base font-semibold text-white">Серия</span>
+            <span className="text-xs text-white/30 mt-0.5">ID 334654318</span>
+          </div>
+
+          <div className="px-4 pb-5">
+            <div className="flex items-baseline justify-between">
+              <span className="text-xs text-white/30">Баланс</span>
+            </div>
+            <div className="text-2xl font-bold text-white mt-1">0,000000 TON</div>
+            <div className="flex gap-2.5 mt-3">
+              <button className="flex-1 bg-[#4ade80] text-black font-medium text-sm rounded-lg py-2.5 text-center">
+                Пополнить
+              </button>
+              <button className="flex-1 bg-white/8 text-white/70 font-medium text-sm rounded-lg py-2.5 text-center">
+                Вывести
+              </button>
             </div>
           </div>
 
-          <div className="px-4 pb-4">
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-5">
-              <span className="text-[13px] text-white/40">Счет</span>
-              <div className="text-[26px] font-bold text-white mt-1 tracking-tight">0,000000 TON</div>
-              <div className="flex gap-3 mt-4">
-                <button className="flex-1 flex items-center justify-center gap-2 bg-[#4ade80] text-black font-semibold text-[15px] rounded-xl py-3.5">
-                  <Icon name="Plus" size={18} />
-                  Пополнить
-                </button>
-                <button className="flex-1 flex items-center justify-center bg-white/10 text-white font-semibold text-[15px] rounded-xl py-3.5">
-                  Вывести
-                </button>
-              </div>
-            </div>
-          </div>
+          <div className="h-px bg-white/5 mx-4" />
 
-          {profileSections.map((section, sIdx) => (
-            <div key={sIdx} className="px-4 pb-3">
-              <div className="bg-white/5 border border-white/10 rounded-2xl overflow-hidden">
-                {section.items.map((item, iIdx) => (
-                  <div key={item.label}>
-                    <button className="w-full flex items-center gap-4 px-5 py-4">
-                      <div className="w-10 h-10 rounded-xl bg-white/10 flex items-center justify-center relative shrink-0">
-                        <Icon
-                          name={item.icon}
-                          fallback={item.fallback || item.icon}
-                          size={20}
-                          className="text-white/40"
-                        />
-                        {item.badge && (
-                          <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-red-500 rounded-full" />
-                        )}
-                      </div>
-                      <div className="flex flex-col items-start">
-                        <span className="text-[15px] font-semibold text-white">{item.label}</span>
-                        <span className="text-[13px] text-white/40">{item.desc}</span>
-                      </div>
-                    </button>
-                    {iIdx < section.items.length - 1 && (
-                      <div className="h-px bg-white/5 ml-[72px] mr-5" />
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          ))}
+          <div className="flex flex-col px-4 py-2">
+            {profileSections.flatMap((s) => s.items).map((item) => (
+              <button
+                key={item.label}
+                className="flex items-center gap-3 py-3.5 active:opacity-60 transition-opacity"
+              >
+                <Icon
+                  name={item.icon}
+                  fallback={item.fallback || item.icon}
+                  size={18}
+                  className="text-white/25"
+                />
+                <span className="text-sm text-white/70">{item.label}</span>
+                {item.badge && (
+                  <div className="w-1.5 h-1.5 bg-red-500 rounded-full" />
+                )}
+                <Icon name="ChevronRight" size={14} className="text-white/15 ml-auto" />
+              </button>
+            ))}
+          </div>
 
           <div className="pb-8" />
         </div>
