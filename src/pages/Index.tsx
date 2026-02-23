@@ -189,10 +189,7 @@ const Index = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 ml-2">
-          <button
-            onClick={() => setProfileOpen(true)}
-            className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5"
-          >
+          <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
             <div className="w-6 h-6 rounded-full shrink-0 overflow-hidden">
               <img
                 src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/521d6370-ca4b-47aa-9be0-a7e2edc0027f.jpg"
@@ -201,7 +198,7 @@ const Index = () => {
               />
             </div>
             <span className="text-white text-xs font-medium">0</span>
-          </button>
+          </div>
           <button className="flex items-center gap-1.5 bg-white text-black text-xs font-semibold rounded-full px-4 py-2 hover:bg-white/90 active:bg-white/80 transition-colors">
             <Icon name="Plus" size={14} />
             Пополнить
