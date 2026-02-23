@@ -29,7 +29,7 @@ const Index = () => {
         <div className="flex items-center gap-2 shrink-0 ml-2">
           <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
             <img
-              src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/205c3f8a-d2ba-450b-a973-b1dd08565edd.jpg"
+              src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/2ca964e5-2ad2-4fa7-9bde-54ff8c5215f7.jpg"
               alt="USDT"
               className="w-5 h-5 rounded-full shrink-0 object-cover"
             />
