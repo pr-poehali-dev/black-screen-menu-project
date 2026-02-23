@@ -27,7 +27,7 @@ const Index = () => {
               <span className="text-white font-semibold text-xs">0</span>
               <Icon name="ChevronDown" size={12} className="text-gray-400" />
             </div>
-            <button className="flex items-center gap-2 bg-[#2196F3] hover:bg-[#1e88e5] active:bg-[#1976d2] transition-colors text-white font-semibold text-sm rounded-full px-4 py-2">
+            <button className="flex items-center gap-2 bg-[#1c1c1e] hover:bg-[#2a2a2e] active:bg-[#111] transition-colors text-white font-semibold text-sm rounded-full px-4 py-2">
               <div className="w-6 h-6 bg-white/20 rounded-lg flex items-center justify-center">
                 <Icon name="WalletCards" size={14} className="text-white" />
               </div>
@@ -48,7 +48,7 @@ const Index = () => {
               <div
                 className={`w-12 h-12 rounded-2xl flex items-center justify-center transition-colors ${
                   active === index
-                    ? "bg-blue-600"
+                    ? "bg-[#1c1c1e]"
                     : "bg-[#2a2a3e]"
                 }`}
               >
@@ -61,7 +61,7 @@ const Index = () => {
               </div>
               <span
                 className={`text-[11px] leading-tight truncate ${
-                  active === index ? "text-blue-400 font-medium" : "text-gray-500"
+                  active === index ? "text-white font-medium" : "text-gray-500"
                 }`}
               >
                 {item.label}
