@@ -1,4 +1,6 @@
 {
+  "telegram-bot-telegram-auth": "https://functions.poehali.dev/420b5ea1-6f3d-420d-bb72-398ac6d4f617",
+  "telegram-bot-telegram-bot": "https://functions.poehali.dev/aee94186-9c12-42ba-9e6b-dd15aed466f9",
   "unisender-go-unisender": "https://functions.poehali.dev/3697f770-7b51-4f85-ae8d-5ce7b80d7563",
   "auth-email-auth": "https://functions.poehali.dev/92e35473-1c53-44e8-b2d8-d769976a894c"
 }
