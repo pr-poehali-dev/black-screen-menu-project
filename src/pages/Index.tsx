@@ -21,12 +21,12 @@ const Index = () => {
             alt="Logo"
             className="h-10 w-auto object-contain"
           />
-          <div className="flex flex-col leading-none items-end">
-            <span className="text-[#4ade80] font-extrabold text-sm tracking-wide uppercase self-start">Jaguar</span>
-            <span className="text-white font-extrabold text-[8px] tracking-[0.35em] uppercase">casino</span>
+          <div className="flex flex-col leading-none">
+            <span className="text-[#4ade80] font-extrabold text-sm tracking-wide uppercase">Jaguar</span>
+            <span className="text-white font-extrabold text-[8px] tracking-[0.55em] uppercase text-right">casino</span>
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 shrink-0 ml-2">
           <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
             <img
               src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/205c3f8a-d2ba-450b-a973-b1dd08565edd.jpg"
