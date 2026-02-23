@@ -62,6 +62,7 @@ const Index = () => {
   const [active, setActive] = useState(1);
   const [menuOpen, setMenuOpen] = useState(false);
   const [profileOpen, setProfileOpen] = useState(false);
+  const [depositOpen, setDepositOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
 
   useEffect(() => {
@@ -208,7 +209,10 @@ const Index = () => {
               <span className="text-[12px] text-white/40">Счет</span>
               <div className="text-[22px] font-bold text-white mt-0.5 tracking-tight">0.00 USDT</div>
               <div className="flex gap-2.5 mt-3">
-                <button className="flex-1 flex items-center justify-center gap-1.5 bg-[#4ade80] text-black font-semibold text-[13px] rounded-lg py-2.5">
+                <button
+                  onClick={() => { setProfileOpen(false); setDepositOpen(true); }}
+                  className="flex-1 flex items-center justify-center gap-1.5 bg-[#4ade80] text-black font-semibold text-[13px] rounded-lg py-2.5"
+                >
                   <Icon name="Plus" size={15} />
                   Пополнить
                 </button>
@@ -262,6 +266,44 @@ const Index = () => {
         </div>
       )}
 
+      {depositOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col overflow-y-auto">
+          <div className="flex items-center justify-between px-5 pt-4 pb-2">
+            <h1 className="text-[22px] font-bold text-white">Пополнение</h1>
+            <button
+              onClick={() => setDepositOpen(false)}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+            >
+              <Icon name="X" size={16} className="text-white/60" />
+            </button>
+          </div>
+
+          <div className="px-4 pt-4 flex flex-col gap-3">
+            <button className="w-full flex items-center gap-3 bg-[#1a1a1a] border border-white/10 rounded-2xl px-4 py-3 active:bg-white/5 transition-colors relative">
+              <div className="absolute top-2.5 left-2.5">
+                <div className="w-5 h-5 rounded-md bg-[#4ade80]/15 flex items-center justify-center">
+                  <Icon name="Zap" size={12} className="text-[#4ade80]" />
+                </div>
+              </div>
+              <div className="w-[52px] h-[52px] rounded-xl bg-[#2a2a2a] flex items-center justify-center shrink-0 overflow-hidden">
+                <img
+                  src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/66fda89c-0aaf-450c-b119-864ef093f773.jpg"
+                  alt="CryptoBot"
+                  className="w-[36px] h-[36px] rounded-full object-cover"
+                />
+              </div>
+              <div className="flex flex-col items-start flex-1 min-w-0">
+                <span className="text-white font-bold text-[15px]">@CryptoBot</span>
+                <span className="text-white/40 text-[12px]">от 10 до 5000</span>
+              </div>
+              <div className="bg-[#4ade80]/15 rounded-full px-3 py-1 shrink-0">
+                <span className="text-[#4ade80] text-[12px] font-semibold">+5% Наличные</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
       <header className="w-full px-2 py-3 flex items-center justify-between border-b border-white/5">
         <div className="flex items-center gap-1.5 shrink-0">
           <img
@@ -285,7 +327,10 @@ const Index = () => {
             </div>
             <span className="text-white text-xs font-medium">0</span>
           </div>
-          <button className="flex items-center gap-1.5 bg-white text-black text-xs font-semibold rounded-full px-4 py-2 hover:bg-white/90 active:bg-white/80 transition-colors">
+          <button
+            onClick={() => setDepositOpen(true)}
+            className="flex items-center gap-1.5 bg-white text-black text-xs font-semibold rounded-full px-4 py-2 hover:bg-white/90 active:bg-white/80 transition-colors"
+          >
             <Icon name="Plus" size={14} />
             Пополнить
           </button>
