@@ -332,10 +332,17 @@ def handler(event: dict, context) -> dict:
     headers_lower = {k.lower(): v for k, v in headers.items()}
     webhook_secret = os.environ.get("TELEGRAM_WEBHOOK_SECRET")
 
+    print(f"[WEBHOOK] Headers keys: {list(headers_lower.keys())}")
+    print(f"[WEBHOOK] Secret from env: '{webhook_secret}'")
+    print(f"[WEBHOOK] Secret from header: '{headers_lower.get('x-telegram-bot-api-secret-token', 'NOT_FOUND')}'")
+
     if webhook_secret:
         request_secret = headers_lower.get("x-telegram-bot-api-secret-token", "")
         if request_secret != webhook_secret:
+            print(f"[WEBHOOK] SECRET MISMATCH! Rejecting request.")
             return {"statusCode": 401, "body": json.dumps({"error": "Unauthorized"})}
 
-    body = json.loads(event.get("body", "{}"))
+    raw_body = event.get("body", "{}")
+    print(f"[WEBHOOK] Body: {raw_body[:500]}")
+    body = json.loads(raw_body)
     return process_webhook(body)
