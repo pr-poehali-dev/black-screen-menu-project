@@ -65,6 +65,8 @@ const Index = () => {
   const [depositOpen, setDepositOpen] = useState(false);
   const [cryptoPayOpen, setCryptoPayOpen] = useState(false);
   const [bonusOpen, setBonusOpen] = useState(false);
+  const [voucherOpen, setVoucherOpen] = useState(false);
+  const [voucherCode, setVoucherCode] = useState("");
   const [depositAmount, setDepositAmount] = useState("5");
   const [depositError, setDepositError] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
@@ -240,6 +242,7 @@ const Index = () => {
                       className="w-full flex items-center gap-3 px-4 py-3"
                       onClick={() => {
                         if (item.label === "Бонусы") { setProfileOpen(false); setBonusOpen(true); }
+                        if (item.label === "Ваучеры") { setProfileOpen(false); setVoucherOpen(true); setVoucherCode(""); }
                       }}
                     >
                       <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center relative shrink-0">
@@ -432,6 +435,49 @@ const Index = () => {
               className="w-full bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-3.5 active:bg-[#3ecb6e] transition-colors disabled:opacity-50"
             >
               {depositLoading ? "Создаём платёж..." : `Пополнить ${depositAmount || "0"} USDT`}
+            </button>
+          </div>
+        </div>
+      )}
+
+      {voucherOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col overflow-y-auto">
+          <div className="flex items-center justify-between px-5 pt-4 pb-2">
+            <button
+              onClick={() => { setVoucherOpen(false); setProfileOpen(true); }}
+              className="flex items-center gap-1.5 text-[#4ade80] text-[14px] font-medium"
+            >
+              <Icon name="ChevronLeft" size={18} />
+              Назад
+            </button>
+            <button
+              onClick={() => setVoucherOpen(false)}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+            >
+              <Icon name="X" size={16} className="text-white/60" />
+            </button>
+          </div>
+
+          <div className="px-5 pt-3">
+            <h1 className="text-[22px] font-bold text-white mb-1.5">Активация ваучера</h1>
+            <p className="text-white/40 text-[13px] mb-5">
+              Деньги зачислятся на счёт{" "}
+              <span className="text-white/40">Правила и условия</span>
+            </p>
+
+            <input
+              type="text"
+              placeholder="Код"
+              value={voucherCode}
+              onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
+              className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 text-white text-[14px] placeholder:text-white/20 focus:outline-none focus:border-[#4ade80]/30 transition-colors mb-4"
+            />
+
+            <button
+              disabled={!voucherCode.trim()}
+              className="w-full bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-3.5 active:bg-[#3ecb6e] transition-colors disabled:opacity-40"
+            >
+              Активировать
             </button>
           </div>
         </div>
