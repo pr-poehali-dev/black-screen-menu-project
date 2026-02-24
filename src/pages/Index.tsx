@@ -67,6 +67,8 @@ const Index = () => {
   const [bonusOpen, setBonusOpen] = useState(false);
   const [voucherOpen, setVoucherOpen] = useState(false);
   const [voucherCode, setVoucherCode] = useState("");
+  const [historyOpen, setHistoryOpen] = useState(false);
+  const [historyTab, setHistoryTab] = useState<"all" | "deposits" | "withdrawals">("all");
   const [depositAmount, setDepositAmount] = useState("5");
   const [depositError, setDepositError] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
@@ -243,6 +245,7 @@ const Index = () => {
                       onClick={() => {
                         if (item.label === "Бонусы") { setProfileOpen(false); setBonusOpen(true); }
                         if (item.label === "Ваучеры") { setProfileOpen(false); setVoucherOpen(true); setVoucherCode(""); }
+                        if (item.label === "История платежей") { setProfileOpen(false); setHistoryOpen(true); setHistoryTab("all"); }
                       }}
                     >
                       <div className="w-8 h-8 rounded-lg bg-white/10 flex items-center justify-center relative shrink-0">
@@ -436,6 +439,56 @@ const Index = () => {
             >
               {depositLoading ? "Создаём платёж..." : `Пополнить ${depositAmount || "0"} USDT`}
             </button>
+          </div>
+        </div>
+      )}
+
+      {historyOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col overflow-hidden">
+          <div className="flex items-center justify-between px-5 pt-4 pb-3">
+            <button
+              onClick={() => { setHistoryOpen(false); setProfileOpen(true); }}
+              className="flex items-center gap-1.5 text-[#4ade80] text-[14px] font-medium"
+            >
+              <Icon name="ChevronLeft" size={18} />
+              Назад
+            </button>
+            <button
+              onClick={() => setHistoryOpen(false)}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+            >
+              <Icon name="X" size={16} className="text-white/60" />
+            </button>
+          </div>
+
+          <div className="px-5 pb-3">
+            <h1 className="text-[22px] font-bold text-white mb-4">История платежей</h1>
+            <div className="flex bg-white/[0.05] rounded-xl p-1 gap-1">
+              {(["all", "deposits", "withdrawals"] as const).map((tab) => {
+                const labels = { all: "Все", deposits: "Депозиты", withdrawals: "Выводы" };
+                return (
+                  <button
+                    key={tab}
+                    onClick={() => setHistoryTab(tab)}
+                    className={`flex-1 py-2 rounded-lg text-[13px] font-semibold transition-colors ${
+                      historyTab === tab
+                        ? "bg-[#4ade80] text-black"
+                        : "text-white/50"
+                    }`}
+                  >
+                    {labels[tab]}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="flex-1 flex flex-col items-center justify-center pb-20">
+            <Icon name="ReceiptText" size={56} className="text-white/15 mb-4" fallback="FileText" />
+            <span className="text-white/50 font-semibold text-[16px] mb-1">Операций пока нет</span>
+            <span className="text-white/25 text-[13px] text-center px-8">
+              Здесь будет отображаться история ваших платежей
+            </span>
           </div>
         </div>
       )}
