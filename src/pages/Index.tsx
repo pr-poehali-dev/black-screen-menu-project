@@ -15,10 +15,8 @@ const bannerSlides = [
 ];
 import Icon from "@/components/ui/icon";
 import AuthScreen from "@/components/AuthScreen";
-import { useAuth } from "@/components/extensions/auth-email/useAuth";
 import { useTelegramAuth } from "@/components/extensions/telegram-bot/useTelegramAuth";
 
-const AUTH_URL = "https://functions.poehali.dev/92e35473-1c53-44e8-b2d8-d769976a894c";
 const TG_AUTH_URL = "https://functions.poehali.dev/420b5ea1-6f3d-420d-bb72-398ac6d4f617";
 const CRYPTO_PAY_URL = "https://functions.poehali.dev/892f6456-5e1e-4974-9df1-9e4ce3603ae9";
 const BALANCE_URL = "https://functions.poehali.dev/9b313374-9637-4e08-aacd-2659b84a6074";
@@ -79,17 +77,6 @@ const Index = () => {
     return () => clearInterval(timer);
   }, []);
 
-  const auth = useAuth({
-    apiUrls: {
-      login: `${AUTH_URL}?action=login`,
-      register: `${AUTH_URL}?action=register`,
-      verifyEmail: `${AUTH_URL}?action=verify-email`,
-      refresh: `${AUTH_URL}?action=refresh`,
-      logout: `${AUTH_URL}?action=logout`,
-      resetPassword: `${AUTH_URL}?action=reset-password`,
-    },
-  });
-
   const tgAuth = useTelegramAuth({
     apiUrls: {
       callback: `${TG_AUTH_URL}?action=callback`,
@@ -99,9 +86,9 @@ const Index = () => {
     botUsername: TG_BOT_USERNAME,
   });
 
-  const isAuthed = auth.isAuthenticated || tgAuth.isAuthenticated;
-  const isLoadingAuth = auth.isLoading || tgAuth.isLoading;
-  const currentUser = tgAuth.user || auth.user;
+  const isAuthed = tgAuth.isAuthenticated;
+  const isLoadingAuth = tgAuth.isLoading;
+  const currentUser = tgAuth.user;
 
   const userId = currentUser?.id != null ? String(currentUser.id) : "";
 
@@ -119,11 +106,10 @@ const Index = () => {
   }, [isAuthed, userId, fetchBalance]);
 
   const handleLogout = useCallback(async () => {
-    if (auth.isAuthenticated) await auth.logout();
-    if (tgAuth.isAuthenticated) await tgAuth.logout();
+    await tgAuth.logout();
     setProfileOpen(false);
     setMenuOpen(false);
-  }, [auth, tgAuth]);
+  }, [tgAuth]);
 
   const handleNavClick = (index: number) => {
     if (index === 0) {
