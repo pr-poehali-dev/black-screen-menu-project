@@ -16,10 +16,11 @@ const AuthScreen = ({ onAuth }: AuthScreenProps) => {
       logout: `${TG_AUTH_URL}?action=logout`,
     },
     botUsername: TG_BOT_USERNAME,
-    onAuthChange: (user) => {
-      if (user) onAuth();
-    },
   });
+
+  useEffect(() => {
+    if (tgAuth.isAuthenticated) onAuth();
+  }, [tgAuth.isAuthenticated]);
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
