@@ -8,7 +8,7 @@ def get_db():
 
 
 def handler(event, context):
-    """Получение истории платежей пользователя"""
+    """Получение истории платежей пользователя с фильтрацией по типу (deposit/withdrawal/all)"""
     if event.get("httpMethod") == "OPTIONS":
         return {
             "statusCode": 200,
@@ -38,12 +38,17 @@ def handler(event, context):
         cur = conn.cursor()
         if filter_type == "deposits":
             cur.execute(
-                "SELECT id, amount, status, created_at, paid_at FROM payments WHERE user_id = %s AND amount > 0 ORDER BY created_at DESC LIMIT 100",
+                "SELECT id, amount, status, type, created_at, paid_at FROM payments WHERE user_id = %s AND type = 'deposit' ORDER BY created_at DESC LIMIT 100",
+                (user_id,)
+            )
+        elif filter_type == "withdrawals":
+            cur.execute(
+                "SELECT id, amount, status, type, created_at, paid_at FROM payments WHERE user_id = %s AND type = 'withdrawal' ORDER BY created_at DESC LIMIT 100",
                 (user_id,)
             )
         else:
             cur.execute(
-                "SELECT id, amount, status, created_at, paid_at FROM payments WHERE user_id = %s ORDER BY created_at DESC LIMIT 100",
+                "SELECT id, amount, status, type, created_at, paid_at FROM payments WHERE user_id = %s ORDER BY created_at DESC LIMIT 100",
                 (user_id,)
             )
         rows = cur.fetchall()
@@ -52,12 +57,12 @@ def handler(event, context):
 
     payments = []
     for row in rows:
-        pid, amount, status, created_at, paid_at = row
+        pid, amount, status, ptype, created_at, paid_at = row
         payments.append({
             "id": pid,
             "amount": float(amount),
             "status": status,
-            "type": "deposit",
+            "type": ptype,
             "created_at": created_at.isoformat() if created_at else None,
             "paid_at": paid_at.isoformat() if paid_at else None,
         })

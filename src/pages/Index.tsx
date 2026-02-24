@@ -516,21 +516,28 @@ const Index = () => {
                   const date = p.paid_at || p.created_at;
                   const dateStr = date ? new Date(date).toLocaleString("ru-RU", { day: "2-digit", month: "2-digit", year: "2-digit", hour: "2-digit", minute: "2-digit" }) : "—";
                   const isPaid = p.status === "paid";
+                  const isWithdrawal = p.type === "withdrawal";
+                  const iconName = isWithdrawal ? "ArrowUpRight" : "ArrowDownLeft";
+                  const label = isWithdrawal ? "Вывод" : "Депозит";
+                  const amountPrefix = isWithdrawal ? "−" : "+";
+                  const activeColor = isWithdrawal ? "text-red-400" : "text-[#4ade80]";
+                  const activeBg = isWithdrawal ? "bg-red-400/15" : "bg-[#4ade80]/15";
+                  const statusLabel = isPaid ? (isWithdrawal ? "Выведено" : "Оплачен") : "Ожидание";
                   return (
                     <div key={p.id} className="flex items-center justify-between bg-white/[0.05] rounded-xl px-4 py-3">
                       <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isPaid ? "bg-[#4ade80]/15" : "bg-white/10"}`}>
-                          <Icon name="ArrowDownLeft" size={18} className={isPaid ? "text-[#4ade80]" : "text-white/40"} />
+                        <div className={`w-9 h-9 rounded-full flex items-center justify-center ${isPaid ? activeBg : "bg-white/10"}`}>
+                          <Icon name={iconName} size={18} className={isPaid ? activeColor : "text-white/40"} />
                         </div>
                         <div>
-                          <div className="text-white text-[14px] font-semibold">Депозит</div>
+                          <div className="text-white text-[14px] font-semibold">{label}</div>
                           <div className="text-white/40 text-[12px]">{dateStr}</div>
                         </div>
                       </div>
                       <div className="text-right">
-                        <div className={`text-[15px] font-bold ${isPaid ? "text-[#4ade80]" : "text-white/50"}`}>+{p.amount} USDT</div>
-                        <div className={`text-[11px] font-medium ${isPaid ? "text-[#4ade80]/70" : "text-yellow-400/70"}`}>
-                          {isPaid ? "Оплачен" : "Ожидание"}
+                        <div className={`text-[15px] font-bold ${isPaid ? activeColor : "text-white/50"}`}>{amountPrefix}{p.amount} USDT</div>
+                        <div className={`text-[11px] font-medium ${isPaid ? `${activeColor}/70` : "text-yellow-400/70"}`}>
+                          {statusLabel}
                         </div>
                       </div>
                     </div>
