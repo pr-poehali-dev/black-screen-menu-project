@@ -197,9 +197,19 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
 
   // ── Handlers: Vouchers ────────────────────────────────────────────────────
 
-  const handleCreateVoucher = async (code: string, amount: string) => {
+  const handleCreateVoucher = async (code: string, amount: string, expiresHours: string, maxUses: string) => {
     try {
-      await fetch(`${VOUCHER_URL}?action=create`, { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ admin_id: String(adminDisplayId), code: code.trim().toUpperCase() || undefined, amount: parseFloat(amount) }) });
+      await fetch(`${VOUCHER_URL}?action=create`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          admin_id: String(adminDisplayId),
+          code: code.trim().toUpperCase() || undefined,
+          amount: parseFloat(amount),
+          expires_hours: expiresHours ? parseFloat(expiresHours) : undefined,
+          max_uses: parseInt(maxUses) || 1,
+        }),
+      });
       await fetchVouchers();
     } catch { /* */ }
   };

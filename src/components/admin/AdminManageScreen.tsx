@@ -324,7 +324,7 @@ interface VouchersScreenProps {
   vouchersLoading: boolean;
   actionLoading: number | null;
   onDeactivate: (v: Voucher) => void;
-  onCreate: (code: string, amount: string) => Promise<void>;
+  onCreate: (code: string, amount: string, expiresHours: string, maxUses: string) => Promise<void>;
   onBack: () => void;
 }
 
@@ -334,18 +334,23 @@ export function VouchersScreen({
   const [modalOpen, setModalOpen] = useState(false);
   const [code, setCode] = useState("");
   const [amount, setAmount] = useState("");
+  const [expiresHours, setExpiresHours] = useState("");
+  const [maxUses, setMaxUses] = useState("1");
   const [error, setError] = useState("");
   const [creating, setCreating] = useState(false);
 
   const handleCreate = async () => {
     if (!amount) { setError("Укажите сумму"); return; }
+    if (!maxUses || parseInt(maxUses) < 1) { setError("Укажите количество активаций (min 1)"); return; }
     setError("");
     setCreating(true);
-    await onCreate(code, amount);
+    await onCreate(code, amount, expiresHours, maxUses);
     setCreating(false);
     setModalOpen(false);
     setCode("");
     setAmount("");
+    setExpiresHours("");
+    setMaxUses("1");
   };
 
   return (
@@ -356,7 +361,7 @@ export function VouchersScreen({
         </button>
         <h2 className="text-white font-bold text-[18px] flex-1">Ваучеры</h2>
         <button
-          onClick={() => { setModalOpen(true); setCode(""); setAmount(""); setError(""); }}
+          onClick={() => { setModalOpen(true); setCode(""); setAmount(""); setExpiresHours(""); setMaxUses("1"); setError(""); }}
           className="flex items-center gap-1.5 bg-[#4ade80] text-black font-semibold text-[12px] rounded-xl px-3 py-2 active:bg-[#3ecb6e] transition-colors"
         >
           <Icon name="Plus" size={14} />
@@ -372,41 +377,51 @@ export function VouchersScreen({
           </div>
         ) : (
           <div className="flex flex-col gap-2">
-            {vouchers.map((v) => (
-              <div key={v.id} className={`bg-white/[0.04] border rounded-2xl px-4 py-3.5 ${v.is_active ? "border-[#4ade80]/15" : "border-white/[0.06]"}`}>
-                <div className="flex items-center gap-3">
-                  <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${v.is_active ? "bg-[#4ade80]/10" : "bg-white/[0.04]"}`}>
-                    <Icon name="Ticket" size={17} className={v.is_active ? "text-[#4ade80]" : "text-white/20"} />
-                  </div>
-                  <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-mono font-bold text-white text-[14px] tracking-widest">{v.code}</span>
-                      {v.is_active
-                        ? <span className="text-[10px] text-[#4ade80] bg-[#4ade80]/10 px-1.5 py-0.5 rounded-full">Активен</span>
-                        : <span className="text-[10px] text-white/25 bg-white/[0.05] px-1.5 py-0.5 rounded-full">Использован</span>}
+            {vouchers.map((v) => {
+              const isReallyActive = v.is_active && !v.is_expired && v.uses_count < v.max_uses;
+              return (
+                <div key={v.id} className={`bg-white/[0.04] border rounded-2xl px-4 py-3.5 ${isReallyActive ? "border-[#4ade80]/15" : "border-white/[0.06]"}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-9 h-9 rounded-xl flex items-center justify-center shrink-0 ${isReallyActive ? "bg-[#4ade80]/10" : "bg-white/[0.04]"}`}>
+                      <Icon name="Ticket" size={17} className={isReallyActive ? "text-[#4ade80]" : "text-white/20"} />
                     </div>
-                    <div className="text-white/25 text-[11px] mt-0.5">
-                      {v.used_by ? `Активирован · ${formatDate(v.used_at)}` : `Создан · ${formatDate(v.created_at)}`}
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-mono font-bold text-white text-[14px] tracking-widest">{v.code}</span>
+                        {isReallyActive
+                          ? <span className="text-[10px] text-[#4ade80] bg-[#4ade80]/10 px-1.5 py-0.5 rounded-full">Активен</span>
+                          : v.is_expired
+                          ? <span className="text-[10px] text-orange-400 bg-orange-500/10 px-1.5 py-0.5 rounded-full">Истёк</span>
+                          : <span className="text-[10px] text-white/25 bg-white/[0.05] px-1.5 py-0.5 rounded-full">Использован</span>}
+                      </div>
+                      <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                        <span className="text-white/25 text-[11px]">Активаций: {v.uses_count}/{v.max_uses}</span>
+                        {v.expires_at && (
+                          <span className={`text-[11px] ${v.is_expired ? "text-orange-400" : "text-white/25"}`}>
+                            · до {formatDate(v.expires_at)}
+                          </span>
+                        )}
+                      </div>
                     </div>
-                  </div>
-                  <div className="text-right shrink-0 flex items-center gap-2">
-                    <div>
-                      <div className="text-[#4ade80] font-bold text-[15px]">{v.amount.toFixed(2)}</div>
-                      <div className="text-white/20 text-[10px]">USDT</div>
+                    <div className="text-right shrink-0 flex items-center gap-2">
+                      <div>
+                        <div className="text-[#4ade80] font-bold text-[15px]">{v.amount.toFixed(2)}</div>
+                        <div className="text-white/20 text-[10px]">USDT</div>
+                      </div>
+                      {isReallyActive && (
+                        <button
+                          onClick={() => onDeactivate(v)}
+                          disabled={actionLoading === v.id}
+                          className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center active:bg-red-500/20 transition-colors disabled:opacity-40"
+                        >
+                          {actionLoading === v.id ? <Icon name="Loader2" size={13} className="text-red-400 animate-spin" /> : <Icon name="X" size={13} className="text-red-400" />}
+                        </button>
+                      )}
                     </div>
-                    {v.is_active && (
-                      <button
-                        onClick={() => onDeactivate(v)}
-                        disabled={actionLoading === v.id}
-                        className="w-7 h-7 rounded-lg bg-red-500/10 flex items-center justify-center active:bg-red-500/20 transition-colors disabled:opacity-40"
-                      >
-                        {actionLoading === v.id ? <Icon name="Loader2" size={13} className="text-red-400 animate-spin" /> : <Icon name="X" size={13} className="text-red-400" />}
-                      </button>
-                    )}
                   </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         )}
       </div>
@@ -448,6 +463,32 @@ export function VouchersScreen({
                   step="0.01"
                   className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 placeholder:text-white/15"
                 />
+              </div>
+              <div className="flex gap-3">
+                <div className="flex-1">
+                  <label className="text-white/35 text-[11px] uppercase tracking-wide mb-1.5 block">Активаций</label>
+                  <input
+                    type="number"
+                    value={maxUses}
+                    onChange={(e) => setMaxUses(e.target.value)}
+                    placeholder="1"
+                    min="1"
+                    step="1"
+                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 placeholder:text-white/15"
+                  />
+                </div>
+                <div className="flex-1">
+                  <label className="text-white/35 text-[11px] uppercase tracking-wide mb-1.5 block">Часов действия</label>
+                  <input
+                    type="number"
+                    value={expiresHours}
+                    onChange={(e) => setExpiresHours(e.target.value)}
+                    placeholder="∞ бессрочно"
+                    min="1"
+                    step="1"
+                    className="w-full bg-white/[0.05] border border-white/[0.08] rounded-xl px-4 py-3.5 text-white text-[15px] outline-none focus:border-[#4ade80]/40 placeholder:text-white/15"
+                  />
+                </div>
               </div>
             </div>
             {error && <div className="text-red-400 text-[12px] mb-3">{error}</div>}

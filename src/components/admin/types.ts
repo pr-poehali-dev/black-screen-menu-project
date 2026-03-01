@@ -70,6 +70,10 @@ export interface Voucher {
   used_by: number | null;
   used_at: string | null;
   created_at: string | null;
+  expires_at: string | null;
+  max_uses: number;
+  uses_count: number;
+  is_expired: boolean;
 }
 
 export type Screen = "home" | "players" | "stats" | "admins" | "withdrawals" | "vouchers";
