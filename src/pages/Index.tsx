@@ -25,6 +25,7 @@ const PAYMENTS_URL = "https://functions.poehali.dev/6f062055-7c07-4741-9e3a-0ae7
 const TG_BOT_USERNAME = "Jaguar_Official_bot";
 const ADMIN_CHECK_URL = "https://functions.poehali.dev/6eb840f4-abc2-453e-a7d9-5f9a989722bf";
 const WITHDRAWAL_URL = "https://functions.poehali.dev/9cfe3eb3-a1dd-4e28-806b-4476909e4725";
+const VOUCHER_URL = "https://functions.poehali.dev/67465d27-c387-428b-a82c-c47b677094b2";
 
 const USDT_ICON = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/521d6370-ca4b-47aa-9be0-a7e2edc0027f.jpg";
 
@@ -75,6 +76,9 @@ const Index = () => {
   const [bonusOpen, setBonusOpen] = useState(false);
   const [voucherOpen, setVoucherOpen] = useState(false);
   const [voucherCode, setVoucherCode] = useState("");
+  const [voucherLoading, setVoucherLoading] = useState(false);
+  const [voucherError, setVoucherError] = useState("");
+  const [voucherSuccess, setVoucherSuccess] = useState<{ amount: number } | null>(null);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [historyTab, setHistoryTab] = useState<"all" | "deposits" | "withdrawals">("all");
   const [payments, setPayments] = useState<Array<{id:number;amount:number;status:string;type:string;created_at:string|null;paid_at:string|null}>>([]);
@@ -626,25 +630,60 @@ const Index = () => {
 
           <div className="px-5 pt-3">
             <h1 className="text-[22px] font-bold text-white mb-1.5">Активация ваучера</h1>
-            <p className="text-white/40 text-[13px] mb-5">
-              Деньги зачислятся на счёт{" "}
-              <span className="text-white/40">Правила и условия</span>
+            <p className="text-white/40 text-[13px] mb-6">
+              Введите код — деньги сразу зачислятся на баланс
             </p>
 
-            <input
-              type="text"
-              placeholder="Код"
-              value={voucherCode}
-              onChange={(e) => setVoucherCode(e.target.value.toUpperCase())}
-              className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 text-white text-[14px] placeholder:text-white/20 focus:outline-none focus:border-[#4ade80]/30 transition-colors mb-4"
-            />
-
-            <button
-              disabled={!voucherCode.trim()}
-              className="w-full bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-3.5 active:bg-[#3ecb6e] transition-colors disabled:opacity-40"
-            >
-              Активировать
-            </button>
+            {voucherSuccess ? (
+              <div className="flex flex-col items-center py-10">
+                <div className="w-16 h-16 rounded-full bg-[#4ade80]/15 flex items-center justify-center mb-4">
+                  <Icon name="Check" size={32} className="text-[#4ade80]" />
+                </div>
+                <div className="text-white font-bold text-[22px] mb-1">+{voucherSuccess.amount.toFixed(2)} USDT</div>
+                <div className="text-white/40 text-[14px] mb-8">Зачислено на счёт</div>
+                <button
+                  onClick={() => { setVoucherOpen(false); setVoucherSuccess(null); setVoucherCode(""); setVoucherError(""); }}
+                  className="bg-[#4ade80] text-black font-bold text-[15px] rounded-xl px-8 py-3 active:bg-[#3ecb6e] transition-colors"
+                >
+                  Отлично!
+                </button>
+              </div>
+            ) : (
+              <>
+                <input
+                  type="text"
+                  placeholder="Введите код ваучера"
+                  value={voucherCode}
+                  onChange={(e) => { setVoucherCode(e.target.value.toUpperCase()); setVoucherError(""); }}
+                  className="w-full bg-white/[0.05] border border-white/10 rounded-xl px-4 py-3.5 text-white font-mono text-[16px] tracking-widest placeholder:text-white/20 placeholder:font-sans placeholder:tracking-normal focus:outline-none focus:border-[#4ade80]/30 transition-colors mb-3"
+                />
+                {voucherError && (
+                  <div className="text-red-400 text-[13px] mb-3">{voucherError}</div>
+                )}
+                <button
+                  disabled={!voucherCode.trim() || voucherLoading}
+                  onClick={async () => {
+                    if (!userId) return;
+                    setVoucherLoading(true);
+                    setVoucherError("");
+                    try {
+                      const res = await fetch(`${VOUCHER_URL}?action=redeem`, {
+                        method: "POST",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ user_id: userId, code: voucherCode.trim() }),
+                      });
+                      const data = await res.json();
+                      if (!res.ok) { setVoucherError(data.error || "Ошибка активации"); }
+                      else { setVoucherSuccess({ amount: data.amount }); await fetchBalance(); }
+                    } catch { setVoucherError("Ошибка соединения"); }
+                    setVoucherLoading(false);
+                  }}
+                  className="w-full bg-[#4ade80] text-black font-bold text-[15px] rounded-xl py-3.5 active:bg-[#3ecb6e] transition-colors disabled:opacity-40"
+                >
+                  {voucherLoading ? "Активируем..." : "Активировать"}
+                </button>
+              </>
+            )}
           </div>
         </div>
       )}
