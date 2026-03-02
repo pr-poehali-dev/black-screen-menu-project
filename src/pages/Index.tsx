@@ -970,10 +970,6 @@ const Index = () => {
                   />
                 ))}
               </div>
-              <div className="absolute bottom-3 left-3 flex items-center gap-2">
-                <Icon name="Zap" size={16} className="text-white/50" />
-                <span className="text-white/50 text-[13px] font-medium">Быстрые игры</span>
-              </div>
             </div>
           </div>
         )}
