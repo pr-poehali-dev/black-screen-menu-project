@@ -128,24 +128,34 @@ def handle_list(qs):
 
 def handle_approve(event):
     body = json.loads(event.get("body") or "{}")
-    req_id = body.get("id")
+    req_id = body.get("withdrawal_id") or body.get("id")
     if not req_id:
         return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "id обязателен"})}
 
     conn = get_db()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT status FROM withdrawal_requests WHERE id = %s", (int(req_id),))
+        cur.execute("SELECT status, user_id, amount FROM withdrawal_requests WHERE id = %s", (int(req_id),))
         row = cur.fetchone()
         if not row:
             return {"statusCode": 404, "headers": CORS, "body": json.dumps({"error": "Заявка не найдена"})}
         if row[0] != "pending":
             return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Заявка уже обработана"})}
 
+        user_id = row[1]
+        amount = float(row[2])
+
         cur.execute(
             "UPDATE withdrawal_requests SET status = 'approved', processed_at = NOW() WHERE id = %s",
             (int(req_id),),
         )
+
+        cur.execute(
+            """INSERT INTO payments (user_id, invoice_id, amount, status, type, created_at, paid_at)
+               VALUES (%s, %s, %s, 'paid', 'withdrawal', NOW(), NOW())""",
+            (str(user_id), int(req_id), amount),
+        )
+
         conn.commit()
     finally:
         conn.close()
@@ -155,7 +165,7 @@ def handle_approve(event):
 
 def handle_reject(event):
     body = json.loads(event.get("body") or "{}")
-    req_id = body.get("id")
+    req_id = body.get("withdrawal_id") or body.get("id")
     if not req_id:
         return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "id обязателен"})}
 
@@ -181,6 +191,13 @@ def handle_reject(event):
                ON CONFLICT (user_id) DO UPDATE SET balance = user_balances.balance + %s, updated_at = NOW()""",
             (str(user_id), amount, amount),
         )
+
+        cur.execute(
+            """INSERT INTO payments (user_id, invoice_id, amount, status, type, created_at, paid_at)
+               VALUES (%s, %s, %s, 'rejected', 'withdrawal', NOW(), NOW())""",
+            (str(user_id), int(req_id), amount),
+        )
+
         conn.commit()
     finally:
         conn.close()

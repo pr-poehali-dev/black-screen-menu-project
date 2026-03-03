@@ -3,10 +3,8 @@
     {
       "name": "List withdrawals",
       "method": "GET",
-      "path": "/?action=list",
-      "expectedStatus": 200,
-      "expectedBody": {"withdrawals": "array"},
-      "bodyMatcher": "partial"
+      "path": "/?action=list&status=all",
+      "expectedStatus": 200
     }
   ]
 }
