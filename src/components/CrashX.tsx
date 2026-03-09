@@ -535,7 +535,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       <div className="fixed inset-0 z-[200] bg-[#13112a] flex flex-col items-center justify-center">
         <div className="flex flex-col items-center gap-4">
           <div className="text-5xl animate-bounce">🚀</div>
-          <span className="text-purple-400 font-extrabold text-2xl tracking-widest">LUCKY JET</span>
+          <span className="text-purple-400 font-extrabold text-2xl tracking-widest">CRASH X</span>
           <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-[#7c3aed] to-[#c026d3] rounded-full transition-all" style={{ width: `${Math.min(loadProg, 100)}%` }} />
           </div>
