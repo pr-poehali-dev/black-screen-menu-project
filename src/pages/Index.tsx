@@ -1364,9 +1364,48 @@ const Index = () => {
         )}
 
         {active === 4 && (
-          <div className="flex flex-col items-center justify-center py-16 px-6">
-            <Icon name="Briefcase" size={48} className="text-[#4ade80]/30 mb-4" />
-            <span className="text-white/40 text-sm">Кейсы — скоро</span>
+          <div className="px-4 py-4 pb-6">
+            <div className="flex items-center gap-2 mb-4">
+              <Icon name="Briefcase" size={20} className="text-white" />
+              <span className="text-white font-semibold text-base">Кейсы</span>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { val: 10, from: "#4ade80", to: "#22c55e", shine: "#6ee7a0" },
+                { val: 15, from: "#3b82f6", to: "#2563eb", shine: "#60a5fa" },
+                { val: 20, from: "#f59e0b", to: "#d97706", shine: "#fbbf24" },
+                { val: 25, from: "#ec4899", to: "#db2777", shine: "#f472b6" },
+                { val: 50, from: "#8b5cf6", to: "#7c3aed", shine: "#a78bfa" },
+                { val: 100, from: "#ef4444", to: "#dc2626", shine: "#f87171" },
+                { val: 260, from: "#14b8a6", to: "#0d9488", shine: "#5eead4" },
+                { val: 500, from: "#f97316", to: "#ea580c", shine: "#fb923c" },
+                { val: 670, from: "#6366f1", to: "#4f46e5", shine: "#818cf8" },
+                { val: 999, from: "#eab308", to: "#ca8a04", shine: "#facc15" },
+              ].map((coin) => (
+                <button
+                  key={coin.val}
+                  className="flex flex-col items-center gap-1.5 bg-white/[0.03] border border-white/[0.06] rounded-2xl p-3 active:scale-[0.96] transition-transform"
+                >
+                  <div
+                    className="w-[72px] h-[72px] rounded-full flex items-center justify-center relative"
+                    style={{
+                      background: `radial-gradient(circle at 35% 30%, ${coin.shine}, ${coin.from} 50%, ${coin.to} 100%)`,
+                      boxShadow: `inset -3px -3px 8px rgba(0,0,0,0.3), inset 2px 2px 6px rgba(255,255,255,0.15), 0 4px 16px ${coin.from}40`,
+                    }}
+                  >
+                    <div
+                      className="absolute top-[14%] left-[22%] w-5 h-3 rounded-full blur-[2px] rotate-[-20deg]"
+                      style={{ background: `${coin.shine}50` }}
+                    />
+                    <div className="flex flex-col items-center leading-none">
+                      <span className="text-white font-extrabold text-[15px] drop-shadow-md">{coin.val}</span>
+                      <span className="text-white/80 text-[11px] drop-shadow-sm">★</span>
+                    </div>
+                  </div>
+                  <span className="text-white/50 text-[11px] font-medium">{coin.val} ★</span>
+                </button>
+              ))}
+            </div>
           </div>
         )}
       </div>
