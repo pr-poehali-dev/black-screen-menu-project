@@ -1373,9 +1373,32 @@ const Index = () => {
         )}
 
         {active === 3 && (
-          <div className="flex flex-col items-center justify-center py-16 px-6">
-            <Icon name="BadgeDollarSign" size={48} className="text-[#4ade80]/30 mb-4" />
-            <span className="text-white/40 text-sm">Free money — скоро</span>
+          <div className="flex flex-col gap-4 px-4 py-4">
+            <div className="rounded-2xl overflow-hidden relative" style={{background: "linear-gradient(135deg, #5b2fc9 0%, #7c3aed 60%, #4c1d95 100%)"}}>
+              <img
+                src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/158c9955-85b4-4a06-8346-ffa5547b6e43.jpg"
+                alt="Ваучеры каждый день"
+                className="w-full h-auto object-cover rounded-2xl"
+              />
+              <div className="p-4">
+                <div className="flex items-center gap-3 bg-white/10 backdrop-blur-sm rounded-xl p-3">
+                  <div className="flex items-center gap-2 flex-1">
+                    <div className="w-10 h-10 rounded-xl bg-[#29a9eb] flex items-center justify-center flex-shrink-0">
+                      <Icon name="Send" size={20} className="text-white" />
+                    </div>
+                    <span className="text-white font-semibold text-sm">Telegram</span>
+                  </div>
+                  <a
+                    href="https://t.me/Jaguar_Official_1"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="bg-white text-[#5b2fc9] font-bold text-sm px-5 py-2 rounded-lg active:scale-95 transition-transform"
+                  >
+                    Подписаться
+                  </a>
+                </div>
+              </div>
+            </div>
           </div>
         )}
 
