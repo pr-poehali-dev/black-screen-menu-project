@@ -1360,7 +1360,7 @@ const Index = () => {
               >
                 <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
                   <img
-                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/18046a11-db75-468d-8af4-d0923c42da1a.jpg"
+                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/31800339-f971-426e-83e0-567f722a924c.jpg"
                     alt="Crash X"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
