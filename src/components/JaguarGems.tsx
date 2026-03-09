@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import Icon from "@/components/ui/icon";
 
 const CELLS = 25;
@@ -28,6 +28,9 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
   const [loadProg, setLoadProg] = useState(0);
   const [cur, setCur] = useState<Cur>("usdt");
   const [bet, setBet] = useState(0);
+  const [justRevealed, setJustRevealed] = useState<number | null>(null);
+  const [shakeGrid, setShakeGrid] = useState(false);
+  const revealTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const bal = cur === "usdt" ? usdtBalance : starsBalance;
   const betVal = parseFloat(betInput) || 0;
@@ -43,6 +46,16 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
     }, 60);
     return () => clearInterval(t);
   }, [phase]);
+
+  useEffect(() => {
+    return () => { if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current); };
+  }, []);
+
+  const triggerRevealAnim = useCallback((idx: number) => {
+    setJustRevealed(idx);
+    if (revealTimeoutRef.current) clearTimeout(revealTimeoutRef.current);
+    revealTimeoutRef.current = setTimeout(() => setJustRevealed(null), 400);
+  }, []);
 
   const start = useCallback(() => {
     if (betVal < MIN_BET || betVal > bal) return;
@@ -62,11 +75,16 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
     const nr = new Set(revealed); nr.add(i);
     setRevealed(nr);
     const nc = [...cells];
+
+    triggerRevealAnim(i);
+
     if (bombs.has(i)) {
       nc[i] = "bomb";
       bombs.forEach(b => { nc[b] = "bomb"; });
       nr.forEach(r => { if (!bombs.has(r)) nc[r] = "gem"; });
       setCells(nc);
+      setShakeGrid(true);
+      setTimeout(() => setShakeGrid(false), 500);
       setPhase("lost");
       return;
     }
@@ -81,7 +99,7 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
       setCells(nc);
       setPhase("won");
     }
-  }, [phase, revealed, bombs, cells, mines, bet, onBalanceChange, cur]);
+  }, [phase, revealed, bombs, cells, mines, bet, onBalanceChange, cur, triggerRevealAnim]);
 
   const cashOut = useCallback(() => {
     if (phase !== "playing") return;
@@ -123,6 +141,19 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
 
   return (
     <div className="fixed inset-0 z-[200] bg-[#0a0e14] flex flex-col overflow-auto">
+      <style>{`
+        @keyframes cellPop { 0% { transform: scale(0.3) rotate(-10deg); opacity: 0; } 50% { transform: scale(1.15) rotate(3deg); } 100% { transform: scale(1) rotate(0deg); opacity: 1; } }
+        @keyframes cellBomb { 0% { transform: scale(0.3); opacity: 0; } 40% { transform: scale(1.3); } 100% { transform: scale(1); opacity: 1; } }
+        @keyframes gridShake { 0%,100% { transform: translateX(0); } 15% { transform: translateX(-4px); } 30% { transform: translateX(4px); } 45% { transform: translateX(-3px); } 60% { transform: translateX(3px); } 75% { transform: translateX(-2px); } 90% { transform: translateX(2px); } }
+        @keyframes cellFlip { 0% { transform: rotateY(0deg) scale(1); } 50% { transform: rotateY(90deg) scale(0.9); } 100% { transform: rotateY(0deg) scale(0.93); } }
+        @keyframes pulseGlow { 0%,100% { box-shadow: 0 0 0 0 rgba(74,222,128,0); } 50% { box-shadow: 0 0 12px 2px rgba(74,222,128,0.3); } }
+        .cell-pop { animation: cellPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .cell-bomb { animation: cellBomb 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards; }
+        .grid-shake { animation: gridShake 0.5s ease-in-out; }
+        .cell-flip { animation: cellFlip 0.35s ease forwards; }
+        .pulse-glow { animation: pulseGlow 1.5s ease-in-out infinite; }
+      `}</style>
+
       <div className="flex items-center justify-between px-4 py-2.5 bg-[#0d1117]/80 backdrop-blur-lg border-b border-white/5 shrink-0">
         <button onClick={onClose} className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
           <Icon name="ArrowLeft" size={16} className="text-white/60" />
@@ -144,10 +175,11 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
       </div>
 
       <div className="flex-1 flex flex-col px-3 py-3 gap-2.5 max-w-md mx-auto w-full">
-        <div className="bg-[#111820] rounded-2xl p-2 border border-white/5">
+        <div className={`bg-[#111820] rounded-2xl p-2 border border-white/5 ${shakeGrid ? "grid-shake" : ""}`}>
           <div className="grid grid-cols-5 gap-1">
             {Array.from({ length: CELLS }).map((_, i) => {
               const c = cells[i];
+              const isJust = justRevealed === i;
               return (
                 <button
                   key={i}
@@ -156,12 +188,14 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
                   className={`aspect-square rounded-lg flex items-center justify-center text-lg transition-all duration-150
                     ${c === "hidden" && phase === "playing" ? "bg-gradient-to-br from-[#1a3a4a] to-[#143040] border border-[#2a5a6a]/30 active:scale-90 cursor-pointer" : ""}
                     ${c === "hidden" && phase !== "playing" ? "bg-gradient-to-br from-[#1a3a4a]/50 to-[#143040]/50 border border-[#2a5a6a]/15" : ""}
-                    ${c === "gem" ? "bg-[#4ade80]/10 border border-[#4ade80]/25 scale-[0.93]" : ""}
-                    ${c === "bomb" ? "bg-red-500/10 border border-red-500/25 scale-[0.93]" : ""}
+                    ${c === "gem" ? "bg-[#4ade80]/10 border border-[#4ade80]/25" : ""}
+                    ${c === "bomb" ? "bg-red-500/10 border border-red-500/25" : ""}
+                    ${c === "gem" && isJust ? "pulse-glow" : ""}
                   `}
+                  style={c !== "hidden" ? { transform: "scale(0.93)" } : undefined}
                 >
-                  {c === "gem" && "💎"}
-                  {c === "bomb" && "💣"}
+                  {c === "gem" && <span className={isJust ? "cell-pop" : "cell-flip"}>💎</span>}
+                  {c === "bomb" && <span className={isJust ? "cell-bomb" : "cell-bomb"}>💣</span>}
                 </button>
               );
             })}
@@ -259,11 +293,7 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
                 { l: "½", fn: () => setBetInput(Math.max(MIN_BET, betVal / 2).toFixed(2)) },
                 { l: "MAX", fn: () => setBetInput(bal.toFixed(2)) },
               ].map(b => (
-                <button
-                  key={b.l}
-                  onClick={b.fn}
-                  className="flex-1 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05] text-white/25 text-[10px] font-medium active:bg-white/[0.06]"
-                >{b.l}</button>
+                <button key={b.l} onClick={b.fn} className="flex-1 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05] text-white/25 text-[10px] font-medium active:bg-white/[0.06]">{b.l}</button>
               ))}
             </div>
 
