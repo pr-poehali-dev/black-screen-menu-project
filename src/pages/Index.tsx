@@ -1408,19 +1408,7 @@ const Index = () => {
         )}
 
         {active === 3 && (
-          <div className="flex flex-col gap-4 px-4 py-4">
-            <a
-              href="https://t.me/Jaguar_Official_1"
-              target="_blank"
-              rel="noopener noreferrer"
-              className="block rounded-2xl overflow-hidden active:scale-[0.98] transition-transform"
-            >
-              <img
-                src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/158c9955-85b4-4a06-8346-ffa5547b6e43.jpg"
-                alt="Ваучеры каждый день"
-                className="w-full h-auto object-cover"
-              />
-            </a>
+          <div className="flex flex-col items-center justify-center flex-1 py-20 gap-3 text-white/20">
           </div>
         )}
 
