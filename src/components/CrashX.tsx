@@ -239,8 +239,8 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const animate = () => {
       const elapsed = (Date.now() - startTimeRef.current) / 1000;
       const m = +(1 + elapsed * 0.15).toFixed(2);
-      const xPct = Math.min((elapsed / 20) * 80, 80);
-      const yPct = Math.max(100 - elapsed * 8, 10);
+      const yPct = Math.max(100 - elapsed * 8, 25);
+      const xPct = yPct <= 25 ? Math.min((elapsed / 20) * 80 + (elapsed * 2), 95) : Math.min((elapsed / 20) * 80, 80);
       setRocketPos({ x: xPct, y: yPct });
 
       if (m >= crashRef.current) {
