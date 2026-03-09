@@ -45,51 +45,28 @@ function generateHistory(): number[] {
   return Array.from({ length: 30 }, () => generateCrashPoint());
 }
 
-function BetPanel({ cur, betInput, setBetInput, minBet, bal, quickBets, sym, autoBet, setAutoBet, autoCashOut, setAutoCashOut, autoCashOutVal, setAutoCashOutVal, isFlying, hasBet, cashOut, placeBet, betVal, isCrashed, isCashedOut, isWaiting, currentWin, onNewRound }: {
+function BetPanel({ cur, betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, isCrashed, isCashedOut, isWaiting, currentWin, onNewRound }: {
   cur: Cur; betInput: string; setBetInput: (v: string) => void; minBet: number; bal: number; quickBets: number[]; sym: string;
-  autoBet: boolean; setAutoBet: (v: boolean | ((p: boolean) => boolean)) => void;
-  autoCashOut: boolean; setAutoCashOut: (v: boolean | ((p: boolean) => boolean)) => void;
-  autoCashOutVal: string; setAutoCashOutVal: (v: string) => void;
   isFlying: boolean; hasBet: boolean; cashOut: () => void; placeBet: () => void; betVal: number;
   isCrashed: boolean; isCashedOut: boolean; isWaiting: boolean; currentWin: number; onNewRound: () => void;
 }) {
   const step = cur === "usdt" ? 1 : 5;
   return (
-    <div className="bg-[#12122e] border border-purple-500/10 rounded-xl p-2.5 space-y-2">
-      <div className="flex items-center gap-2 flex-wrap">
-        <label className="flex items-center gap-1.5 cursor-pointer">
-          <div onClick={() => setAutoBet(v => !v)} className={`w-8 h-[18px] rounded-full relative transition-colors ${autoBet ? 'bg-purple-500' : 'bg-white/10'}`}>
-            <div className={`absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white transition-transform ${autoBet ? 'translate-x-[16px]' : 'translate-x-[2px]'}`} />
-          </div>
-          <span className="text-white/50 text-[11px]">Авто</span>
-        </label>
-        <label className="flex items-center gap-1.5 cursor-pointer">
-          <div onClick={() => setAutoCashOut(v => !v)} className={`w-8 h-[18px] rounded-full relative transition-colors ${autoCashOut ? 'bg-purple-500' : 'bg-white/10'}`}>
-            <div className={`absolute top-[2px] w-[14px] h-[14px] rounded-full bg-white transition-transform ${autoCashOut ? 'translate-x-[16px]' : 'translate-x-[2px]'}`} />
-          </div>
-          <span className="text-white/50 text-[11px]">Вывод</span>
-        </label>
-        {autoCashOut && (
-          <div className="flex items-center bg-white/5 border border-white/10 rounded-md px-1.5 py-0.5 ml-auto">
-            <span className="text-white/30 text-[10px] mr-0.5">x</span>
-            <input type="number" value={autoCashOutVal} onChange={e => setAutoCashOutVal(e.target.value)} className="w-10 bg-transparent text-white text-[11px] font-bold text-center outline-none" step="0.1" min="1.1" />
-          </div>
-        )}
-      </div>
+    <div className="bg-[#12122e] border border-purple-500/10 rounded-xl p-2.5">
       <div className="flex gap-2">
         <div className="flex-1 space-y-1.5">
           <div className="flex items-center bg-[#0c0c24] border border-white/10 rounded-lg overflow-hidden h-10">
-            <button onClick={() => setBetInput(String(Math.max(minBet, +(parseFloat(betInput) || 0) - step)))} className="px-2 text-white/30 active:text-white">
+            <button onClick={() => setBetInput(String(Math.max(minBet, +(parseFloat(betInput) || 0) - step)))} className="px-2.5 text-white/30 active:text-white transition">
               <Icon name="Minus" size={14} />
             </button>
             <input type="number" value={betInput} onChange={e => setBetInput(e.target.value)} className="flex-1 bg-transparent text-white text-center font-bold text-base outline-none min-w-0" min={minBet} />
-            <button onClick={() => setBetInput(String(Math.min(bal, +(parseFloat(betInput) || 0) + step)))} className="px-2 text-white/30 active:text-white">
+            <button onClick={() => setBetInput(String(Math.min(bal, +(parseFloat(betInput) || 0) + step)))} className="px-2.5 text-white/30 active:text-white transition">
               <Icon name="Plus" size={14} />
             </button>
           </div>
           <div className="flex gap-1">
             {quickBets.map(q => (
-              <button key={q} onClick={() => setBetInput(String(q))} className="flex-1 py-1 rounded-md bg-white/5 text-white/40 text-[10px] font-bold active:bg-white/10">
+              <button key={q} onClick={() => setBetInput(String(q))} className="flex-1 py-1 rounded-md bg-white/5 text-white/40 text-[10px] font-bold active:bg-white/10 transition">
                 {q >= 1000 ? `${q / 1000}K` : q}
               </button>
             ))}
@@ -123,9 +100,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [betInput, setBetInput] = useState(initialCurrency === "usdt" ? "1" : "5");
   const [multiplier, setMultiplier] = useState(1.0);
   const [history, setHistory] = useState<number[]>(generateHistory);
-  const [autoBet, setAutoBet] = useState(false);
-  const [autoCashOut, setAutoCashOut] = useState(false);
-  const [autoCashOutVal, setAutoCashOutVal] = useState("2.00");
   const [betPlaced, setBetPlaced] = useState(0);
   const [roundProgress, setRoundProgress] = useState(0);
   const [rocketPos, setRocketPos] = useState({ x: 0, y: 100 });
@@ -136,10 +110,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const startTimeRef = useRef(0);
   const crashRef = useRef(0);
   const cashedOutRef = useRef(false);
-  const autoCashRef = useRef(false);
-  const autoValRef = useRef(2);
   const roundTimerRef = useRef<ReturnType<typeof setInterval>>();
-  const autoBetRef = useRef(false);
   const betInputRef = useRef(betInput);
 
   const bal = cur === "usdt" ? usdtBalance : starsBalance;
@@ -148,8 +119,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const minBet = cur === "usdt" ? MIN_BET_USDT : MIN_BET_STARS;
   const quickBets = cur === "usdt" ? QUICK_BETS_USDT : QUICK_BETS_STARS;
 
-  useEffect(() => { autoCashRef.current = autoCashOut; autoValRef.current = parseFloat(autoCashOutVal) || 2; }, [autoCashOut, autoCashOutVal]);
-  useEffect(() => { autoBetRef.current = autoBet; }, [autoBet]);
   useEffect(() => { betInputRef.current = betInput; }, [betInput]);
 
   useEffect(() => {
@@ -208,27 +177,11 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
             setHistory(prev => [crashRef.current, ...prev.slice(0, 29)]);
             onRefreshBalance();
             setTimeout(() => {
-              if (autoBetRef.current) {
-                autoPlaceBet().then(() => {});
-              } else {
-                setBetPlaced(0);
-                startRoundWait();
-              }
+              setBetPlaced(0);
+              startRoundWait();
             }, 2500);
           }, 600);
         }
-        return;
-      }
-
-      if (autoCashRef.current && m >= autoValRef.current && !cashedOutRef.current) {
-        cashedOutRef.current = true;
-        const bp = betPlaced || parseFloat(betInputRef.current) || 0;
-        const winnings = +(bp * autoValRef.current).toFixed(2);
-        setCurrentWin(winnings);
-        apiBalance(userId, "win", winnings, cur).then(() => onRefreshBalance());
-        onBalanceChange(cur, winnings);
-        setMultiplier(autoValRef.current);
-        setPhase("cashedOut");
         return;
       }
 
@@ -237,19 +190,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       animRef.current = requestAnimationFrame(animate);
     };
     animRef.current = requestAnimationFrame(animate);
-  }, [betPlaced, cur, onBalanceChange, onRefreshBalance, userId, startRoundWait]);
-
-  const autoPlaceBet = useCallback(async () => {
-    const bv = parseFloat(betInputRef.current) || 0;
-    const b = cur === "usdt" ? usdtBalance : starsBalance;
-    const mb = cur === "usdt" ? MIN_BET_USDT : MIN_BET_STARS;
-    if (bv < mb || bv > b) { setBetPlaced(0); startRoundWait(); return; }
-    const res = await apiBalance(userId, "bet", bv, cur);
-    if (!res || !res.ok) { setBetPlaced(0); startRoundWait(); return; }
-    onBalanceChange(cur, -bv);
-    setBetPlaced(bv);
-    startRoundWait();
-  }, [cur, usdtBalance, starsBalance, userId, onBalanceChange, startRoundWait]);
+  }, [betPlaced, onRefreshBalance, startRoundWait]);
 
   const placeBet = useCallback(async () => {
     const bv = parseFloat(betInput) || 0;
@@ -347,7 +288,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const isWaiting = phase === "roundWait";
   const hasBet = betPlaced > 0;
 
-  const panelProps = { cur, betInput, setBetInput, minBet, bal, quickBets, sym, autoBet, setAutoBet, autoCashOut, setAutoCashOut, autoCashOutVal, setAutoCashOutVal, isFlying, hasBet, cashOut, placeBet, betVal, isCrashed, isCashedOut, isWaiting, currentWin, onNewRound };
+  const panelProps = { cur, betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, isCrashed, isCashedOut, isWaiting, currentWin, onNewRound };
 
   return (
     <div className="fixed inset-0 z-[200] bg-[#0c0c24] flex flex-col">
@@ -358,7 +299,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         </button>
         <div className="flex items-center gap-1.5">
           <span className="text-white/30 text-[10px] uppercase">{cur === "usdt" ? "USDT" : "Stars"}</span>
-          <span className="text-white font-bold text-sm">{bal.toFixed(2)}{sym}</span>
+          <span className="text-white font-bold text-sm">{bal.toFixed(2)} {sym}</span>
         </div>
         <button onClick={() => { setCur(c => c === "usdt" ? "stars" : "usdt"); setBetInput(cur === "usdt" ? "5" : "1"); }} className="bg-white/10 rounded-full px-2.5 py-1 text-[10px] text-white/50 active:scale-95">
           {cur === "usdt" ? "★ Stars" : "$ USDT"}
@@ -402,7 +343,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
               <div className="text-white font-extrabold text-3xl leading-none" style={{ textShadow: "0 0 16px rgba(139,92,246,0.4)" }}>
                 x{multiplier.toFixed(2)}
               </div>
-              {hasBet && <div className="text-green-400 font-bold text-sm mt-0.5">{currentWin.toFixed(2)}{sym}</div>}
+              {hasBet && <div className="text-green-400 font-bold text-sm mt-0.5">{currentWin.toFixed(2)} {sym}</div>}
             </div>
           </div>
         )}
@@ -410,13 +351,13 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
             <div className="text-red-500 font-extrabold text-4xl leading-none animate-pulse">x{multiplier.toFixed(2)}</div>
             <div className="text-red-400 font-bold text-sm mt-1 uppercase tracking-wider">Улетел!</div>
-            {hasBet && !cashedOutRef.current && <div className="text-red-400/60 text-xs mt-0.5">-{betPlaced.toFixed(2)}{sym}</div>}
+            {hasBet && !cashedOutRef.current && <div className="text-red-400/60 text-xs mt-0.5">-{betPlaced.toFixed(2)} {sym}</div>}
           </div>
         )}
         {isCashedOut && (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
             <div className="text-green-400 font-extrabold text-4xl leading-none">x{multiplier.toFixed(2)}</div>
-            <div className="text-green-300 font-bold text-base mt-1">+{currentWin.toFixed(2)}{sym}</div>
+            <div className="text-green-300 font-bold text-base mt-1">+{currentWin.toFixed(2)} {sym}</div>
             <div className="text-green-400/50 text-xs mt-0.5">Забрано!</div>
           </div>
         )}
@@ -429,7 +370,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
       <div className="px-3 py-1.5 shrink-0">
         <div className="flex items-center justify-between text-white/15 text-[9px]">
-          <span>Мин: {minBet}{sym}</span>
+          <span>Мин: {minBet} {sym}</span>
           <span>Crash X — Turbo Games</span>
         </div>
       </div>
