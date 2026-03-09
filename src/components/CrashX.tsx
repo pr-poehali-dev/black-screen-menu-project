@@ -45,12 +45,13 @@ function generateHistory(): number[] {
   return Array.from({ length: 30 }, () => generateCrashPoint());
 }
 
-function BetPanel({ betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, currentWin, step }: {
+function BetPanel({ betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, isCashedOut, cashOut, placeBet, betVal, currentWin, step }: {
   betInput: string; setBetInput: (v: string) => void; minBet: number; bal: number; quickBets: number[]; sym: string;
-  isFlying: boolean; hasBet: boolean; cashOut: () => void; placeBet: () => void; betVal: number;
+  isFlying: boolean; hasBet: boolean; isCashedOut: boolean; cashOut: () => void; placeBet: () => void; betVal: number;
   currentWin: number; step: number;
 }) {
   const [autoCashout, setAutoCashout] = useState("2.00");
+  const blocked = isFlying && !hasBet;
 
   return (
     <div className="bg-[#1e1b3a] border border-[#2d2755] rounded-2xl p-3 space-y-2.5">
@@ -80,7 +81,7 @@ function BetPanel({ betInput, setBetInput, minBet, bal, quickBets, sym, isFlying
 
       <div className="flex gap-2">
         <div className="flex-1 min-w-0 space-y-2">
-          <div className="flex items-center bg-[#13112a] border border-[#2d2755] rounded-xl overflow-hidden h-12">
+          <div className={`flex items-center bg-[#13112a] border border-[#2d2755] rounded-xl overflow-hidden h-12 ${blocked ? "opacity-40 pointer-events-none" : ""}`}>
             <button
               onClick={() => setBetInput(String(Math.max(minBet, +(parseFloat(betInput) || 0) - step)))}
               className="w-12 h-full flex items-center justify-center text-white/50 active:text-white transition border-r border-[#2d2755]"
@@ -101,7 +102,7 @@ function BetPanel({ betInput, setBetInput, minBet, bal, quickBets, sym, isFlying
               <Icon name="Plus" size={18} />
             </button>
           </div>
-          <div className="flex gap-1.5">
+          <div className={`flex gap-1.5 ${blocked ? "opacity-40 pointer-events-none" : ""}`}>
             {quickBets.map(q => (
               <button
                 key={q}
@@ -113,13 +114,17 @@ function BetPanel({ betInput, setBetInput, minBet, bal, quickBets, sym, isFlying
             ))}
           </div>
         </div>
-        {isFlying && hasBet ? (
+        {isFlying && hasBet && !isCashedOut ? (
           <button
             onClick={cashOut}
             className="w-[120px] shrink-0 rounded-xl bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-lg active:scale-[0.97] transition-transform flex flex-col items-center justify-center shadow-lg shadow-green-500/20"
           >
             <span>ЗАБРАТЬ</span>
             <span className="text-sm font-bold opacity-80">{currentWin.toFixed(2)}{sym}</span>
+          </button>
+        ) : blocked ? (
+          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#2d2755] text-white/30 font-bold text-sm">
+            ЖДИТЕ...
           </button>
         ) : !hasBet ? (
           <button
@@ -152,6 +157,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [rocketPos, setRocketPos] = useState({ x: 0, y: 100 });
   const [flyAway, setFlyAway] = useState(false);
   const [currentWin, setCurrentWin] = useState(0);
+  const [cashedOut, setCashedOut] = useState(false);
 
   const animRef = useRef<number>(0);
   const startTimeRef = useRef(0);
@@ -203,6 +209,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     const cp = generateCrashPoint();
     crashRef.current = cp;
     cashedOutRef.current = false;
+    setCashedOut(false);
     startTimeRef.current = Date.now();
     setMultiplier(1.0);
     setFlyAway(false);
@@ -218,22 +225,20 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
       if (m >= crashRef.current) {
         setMultiplier(crashRef.current);
-        if (!cashedOutRef.current) {
-          setFlyAway(true);
+        setFlyAway(true);
+        setTimeout(() => {
+          setPhase("crashed");
+          setHistory(prev => [crashRef.current, ...prev.slice(0, 29)]);
+          onRefreshBalance();
           setTimeout(() => {
-            setPhase("crashed");
-            setHistory(prev => [crashRef.current, ...prev.slice(0, 29)]);
-            onRefreshBalance();
-            setTimeout(() => {
-              setBetPlaced(0);
-              startRoundWait();
-            }, 1200);
-          }, 500);
-        }
+            setBetPlaced(0);
+            startRoundWait();
+          }, 1200);
+        }, 500);
         return;
       }
 
-      if (betPlaced > 0) setCurrentWin(+(betPlaced * m).toFixed(2));
+      if (betPlaced > 0 && !cashedOutRef.current) setCurrentWin(+(betPlaced * m).toFixed(2));
       setMultiplier(m);
       animRef.current = requestAnimationFrame(animate);
     };
@@ -255,19 +260,13 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const cashOut = useCallback(async () => {
     if (phase !== "flying" || cashedOutRef.current || betPlaced <= 0) return;
     cashedOutRef.current = true;
-    cancelAnimationFrame(animRef.current);
+    setCashedOut(true);
     const winnings = +(betPlaced * multiplier).toFixed(2);
     setCurrentWin(winnings);
-    await apiBalance(userId, "win", winnings, cur);
+    apiBalance(userId, "win", winnings, cur);
     onBalanceChange(cur, winnings);
     onRefreshBalance();
-    setPhase("cashedOut");
-    setHistory(prev => [crashRef.current, ...prev.slice(0, 29)]);
-    setTimeout(() => {
-      setBetPlaced(0);
-      startRoundWait();
-    }, 1500);
-  }, [phase, betPlaced, multiplier, cur, userId, onBalanceChange, onRefreshBalance, startRoundWait]);
+  }, [phase, betPlaced, multiplier, cur, userId, onBalanceChange, onRefreshBalance]);
 
   useEffect(() => {
     return () => {
@@ -330,11 +329,10 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
   const isFlying = phase === "flying";
   const isCrashed = phase === "crashed";
-  const isCashedOut = phase === "cashedOut";
   const isWaiting = phase === "roundWait";
   const hasBet = betPlaced > 0;
 
-  const panelProps = { betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, cashOut, placeBet, betVal, currentWin, step };
+  const panelProps = { betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, isCashedOut: cashedOut, cashOut, placeBet, betVal, currentWin, step };
 
   return (
     <div className="fixed inset-0 z-[200] bg-[#13112a] flex flex-col overflow-auto">
@@ -394,7 +392,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
               <div className="text-white font-extrabold text-4xl leading-none" style={{ textShadow: "0 0 20px rgba(124,58,237,0.5)" }}>
                 x{multiplier.toFixed(2)}
               </div>
-              {hasBet && <div className="text-purple-300 font-bold text-base mt-1">{currentWin.toFixed(2)} {sym}</div>}
             </div>
           </div>
         )}
@@ -402,14 +399,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
             <div className="text-red-500 font-extrabold text-5xl leading-none animate-pulse">x{multiplier.toFixed(2)}</div>
             <div className="text-red-400 font-bold text-base mt-2 uppercase tracking-wider">Улетел!</div>
-            {hasBet && !cashedOutRef.current && <div className="text-red-400/60 text-sm mt-1">-{betPlaced.toFixed(2)} {sym}</div>}
-          </div>
-        )}
-        {isCashedOut && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-            <div className="text-green-400 font-extrabold text-5xl leading-none">x{multiplier.toFixed(2)}</div>
-            <div className="text-green-300 font-bold text-lg mt-2">+{currentWin.toFixed(2)} {sym}</div>
-            <div className="text-green-400/50 text-sm mt-1">Забрано!</div>
           </div>
         )}
       </div>
