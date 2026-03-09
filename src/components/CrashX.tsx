@@ -120,7 +120,12 @@ function BetPanel({ betInput, setBetInput, minBet, bal, quickBets, sym, isFlying
             className="w-[120px] shrink-0 rounded-xl bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-lg active:scale-[0.97] transition-transform flex flex-col items-center justify-center shadow-lg shadow-green-500/20"
           >
             <span>ЗАБРАТЬ</span>
-            <span className="text-sm font-bold opacity-80">{currentWin.toFixed(2)}{sym}</span>
+            <span className="text-sm font-bold opacity-80">{currentWin.toFixed(2)} {sym}</span>
+          </button>
+        ) : isFlying && hasBet && isCashedOut ? (
+          <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#1a3a2a] border border-green-500/30 text-green-400 font-extrabold text-sm flex flex-col items-center justify-center">
+            <span>ЗАБРАНО</span>
+            <span className="text-xs font-bold opacity-80">+{currentWin.toFixed(2)} {sym}</span>
           </button>
         ) : blocked ? (
           <button disabled className="w-[120px] shrink-0 rounded-xl bg-[#2d2755] text-white/30 font-bold text-sm">
