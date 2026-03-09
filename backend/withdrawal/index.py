@@ -45,20 +45,34 @@ def handle_create(event):
     network = body.get("network", "").strip()
     address = body.get("address", "").strip()
     amount = body.get("amount")
+    currency = body.get("currency", "usdt")
 
     if not user_id or not network or not address or amount is None:
         return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Все поля обязательны"})}
 
     amount = float(amount)
-    if amount < 15:
-        return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Минимальная сумма вывода — 15 USDT"})}
+    is_stars = currency == "stars"
+
+    if is_stars:
+        amount = int(amount)
+        if amount < 100:
+            return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Минимальный вывод — 100 звёзд"})}
+    else:
+        if amount < 15:
+            return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Минимальная сумма вывода — 15 USDT"})}
 
     conn = get_db()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT balance FROM user_balances WHERE user_id = %s", (str(user_id),))
-        row = cur.fetchone()
-        balance = float(row[0]) if row else 0.0
+
+        if is_stars:
+            cur.execute("SELECT balance FROM user_stars_balances WHERE user_id = %s", (str(user_id),))
+            row = cur.fetchone()
+            balance = int(row[0]) if row else 0
+        else:
+            cur.execute("SELECT balance FROM user_balances WHERE user_id = %s", (str(user_id),))
+            row = cur.fetchone()
+            balance = float(row[0]) if row else 0.0
 
         if amount > balance:
             return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "Недостаточно средств"})}
@@ -78,10 +92,16 @@ def handle_create(event):
         )
         req_id = cur.fetchone()[0]
 
-        cur.execute(
-            "UPDATE user_balances SET balance = balance - %s, updated_at = NOW() WHERE user_id = %s",
-            (amount, str(user_id)),
-        )
+        if is_stars:
+            cur.execute(
+                "UPDATE user_stars_balances SET balance = balance - %s, updated_at = NOW() WHERE user_id = %s",
+                (int(amount), str(user_id)),
+            )
+        else:
+            cur.execute(
+                "UPDATE user_balances SET balance = balance - %s, updated_at = NOW() WHERE user_id = %s",
+                (amount, str(user_id)),
+            )
         conn.commit()
     finally:
         conn.close()
@@ -135,7 +155,7 @@ def handle_approve(event):
     conn = get_db()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT status, user_id, amount FROM withdrawal_requests WHERE id = %s", (int(req_id),))
+        cur.execute("SELECT status, user_id, amount, network FROM withdrawal_requests WHERE id = %s", (int(req_id),))
         row = cur.fetchone()
         if not row:
             return {"statusCode": 404, "headers": CORS, "body": json.dumps({"error": "Заявка не найдена"})}
@@ -144,16 +164,18 @@ def handle_approve(event):
 
         user_id = row[1]
         amount = float(row[2])
+        network = row[3]
 
         cur.execute(
             "UPDATE withdrawal_requests SET status = 'approved', processed_at = NOW() WHERE id = %s",
             (int(req_id),),
         )
 
+        w_type = "stars_withdrawal" if network == "TG_STARS" else "withdrawal"
         cur.execute(
             """INSERT INTO payments (user_id, invoice_id, amount, status, type, created_at, paid_at)
-               VALUES (%s, %s, %s, 'paid', 'withdrawal', NOW(), NOW())""",
-            (str(user_id), int(req_id), amount),
+               VALUES (%s, %s, %s, 'paid', %s, NOW(), NOW())""",
+            (str(user_id), int(req_id), amount, w_type),
         )
 
         conn.commit()
@@ -172,7 +194,7 @@ def handle_reject(event):
     conn = get_db()
     try:
         cur = conn.cursor()
-        cur.execute("SELECT status, user_id, amount FROM withdrawal_requests WHERE id = %s", (int(req_id),))
+        cur.execute("SELECT status, user_id, amount, network FROM withdrawal_requests WHERE id = %s", (int(req_id),))
         row = cur.fetchone()
         if not row:
             return {"statusCode": 404, "headers": CORS, "body": json.dumps({"error": "Заявка не найдена"})}
@@ -181,21 +203,31 @@ def handle_reject(event):
 
         user_id = row[1]
         amount = float(row[2])
+        network = row[3]
 
         cur.execute(
             "UPDATE withdrawal_requests SET status = 'rejected', processed_at = NOW() WHERE id = %s",
             (int(req_id),),
         )
-        cur.execute(
-            """INSERT INTO user_balances (user_id, balance, updated_at) VALUES (%s, %s, NOW())
-               ON CONFLICT (user_id) DO UPDATE SET balance = user_balances.balance + %s, updated_at = NOW()""",
-            (str(user_id), amount, amount),
-        )
 
+        if network == "TG_STARS":
+            cur.execute(
+                """INSERT INTO user_stars_balances (user_id, balance, updated_at) VALUES (%s, %s, NOW())
+                   ON CONFLICT (user_id) DO UPDATE SET balance = user_stars_balances.balance + %s, updated_at = NOW()""",
+                (str(user_id), int(amount), int(amount)),
+            )
+        else:
+            cur.execute(
+                """INSERT INTO user_balances (user_id, balance, updated_at) VALUES (%s, %s, NOW())
+                   ON CONFLICT (user_id) DO UPDATE SET balance = user_balances.balance + %s, updated_at = NOW()""",
+                (str(user_id), amount, amount),
+            )
+
+        w_type = "stars_withdrawal" if network == "TG_STARS" else "withdrawal"
         cur.execute(
             """INSERT INTO payments (user_id, invoice_id, amount, status, type, created_at, paid_at)
-               VALUES (%s, %s, %s, 'rejected', 'withdrawal', NOW(), NOW())""",
-            (str(user_id), int(req_id), amount),
+               VALUES (%s, %s, %s, 'rejected', %s, NOW(), NOW())""",
+            (str(user_id), int(req_id), amount, w_type),
         )
 
         conn.commit()

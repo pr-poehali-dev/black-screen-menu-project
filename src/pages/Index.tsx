@@ -110,6 +110,12 @@ const Index = () => {
   const [withdrawLoading, setWithdrawLoading] = useState(false);
   const [withdrawSuccess, setWithdrawSuccess] = useState(false);
   const [withdrawSearch, setWithdrawSearch] = useState("");
+  const [starsWithdrawOpen, setStarsWithdrawOpen] = useState(false);
+  const [starsWithdrawAmount, setStarsWithdrawAmount] = useState("100");
+  const [starsWithdrawUsername, setStarsWithdrawUsername] = useState("");
+  const [starsWithdrawError, setStarsWithdrawError] = useState("");
+  const [starsWithdrawLoading, setStarsWithdrawLoading] = useState(false);
+  const [starsWithdrawSuccess, setStarsWithdrawSuccess] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -878,21 +884,36 @@ const Index = () => {
                   <Icon name="X" size={16} className="text-white/60" />
                 </button>
               </div>
-              <div className="px-5 pt-4">
+              <div className="px-5 pt-4 flex flex-col gap-3">
                 <button
                   onClick={() => setWithdrawStep(2)}
-                  className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 w-full max-w-[220px] active:bg-white/10 transition-colors"
+                  className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 w-full active:bg-white/10 transition-colors"
                 >
                   <div className="w-10 h-10 rounded-full overflow-hidden shrink-0 bg-[#50AF95]/20 flex items-center justify-center">
                     <img src={USDT_ICON} alt="USDT" className="w-full h-full object-cover scale-[1.8]" />
                   </div>
-                  <div className="flex flex-col items-start">
+                  <div className="flex flex-col items-start flex-1">
                     <div className="flex items-center gap-2">
                       <span className="text-[#50AF95] font-bold text-[15px]">ERC20</span>
                       <span className="text-white/30 text-[11px] bg-white/5 rounded-full px-2 py-0.5">4</span>
                     </div>
                     <span className="text-white/50 text-[12px]">Криптовалюта</span>
                   </div>
+                  <Icon name="ChevronRight" size={18} className="text-white/30 shrink-0" />
+                </button>
+
+                <button
+                  onClick={() => { setWithdrawOpen(false); setStarsWithdrawOpen(true); setStarsWithdrawAmount("100"); setStarsWithdrawUsername(""); setStarsWithdrawError(""); setStarsWithdrawSuccess(false); }}
+                  className="flex items-center gap-3 bg-white/5 border border-white/10 rounded-2xl px-4 py-3.5 w-full active:bg-white/10 transition-colors"
+                >
+                  <div className="w-10 h-10 rounded-full shrink-0 overflow-hidden">
+                    <img src={TG_STARS_ICON} alt="Stars" className="w-full h-full object-cover" />
+                  </div>
+                  <div className="flex flex-col items-start flex-1">
+                    <span className="text-[#f5a623] font-bold text-[15px]">Звёзды ТГ</span>
+                    <span className="text-white/50 text-[12px]">Telegram Stars</span>
+                  </div>
+                  <Icon name="ChevronRight" size={18} className="text-white/30 shrink-0" />
                 </button>
               </div>
             </>
@@ -1062,6 +1083,137 @@ const Index = () => {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {starsWithdrawOpen && (
+        <div className="fixed inset-0 z-50 bg-black flex flex-col overflow-y-auto">
+          <div className="flex items-center justify-between px-5 pt-4 pb-2">
+            <button
+              onClick={() => { setStarsWithdrawOpen(false); setWithdrawOpen(true); setWithdrawStep(1); }}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+            >
+              <Icon name="ArrowLeft" size={16} className="text-white/60" />
+            </button>
+            <h1 className="text-[18px] font-bold text-white">Вывод Stars</h1>
+            <button
+              onClick={() => setStarsWithdrawOpen(false)}
+              className="w-8 h-8 rounded-full bg-white/10 flex items-center justify-center"
+            >
+              <Icon name="X" size={16} className="text-white/60" />
+            </button>
+          </div>
+
+          <div className="px-4 pt-4">
+            <div className="bg-[#111] border border-white/10 rounded-2xl px-4 py-4 flex items-center gap-3">
+              <div className="w-[52px] h-[52px] rounded-xl bg-[#1a1a1a] flex items-center justify-center shrink-0 overflow-hidden">
+                <img src={TG_STARS_ICON} alt="Stars" className="w-[36px] h-[36px] rounded-full object-cover" />
+              </div>
+              <div className="flex flex-col">
+                <span className="text-white font-bold text-[15px]">Звёзды ТГ</span>
+                <span className="text-white/40 text-[13px]">Вывод на Telegram</span>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-4 pt-5">
+            <div className="mb-3">
+              <span className="text-white/70 text-[14px] font-medium">Ваш username</span>
+              <div className="bg-[#111] border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-2 mt-1.5">
+                <span className="text-white/40 text-[15px]">@</span>
+                <input
+                  type="text"
+                  value={starsWithdrawUsername}
+                  onChange={(e) => { setStarsWithdrawUsername(e.target.value.replace(/^@/, "")); setStarsWithdrawError(""); }}
+                  placeholder="username"
+                  className="bg-transparent text-white text-[15px] outline-none w-full placeholder:text-white/25"
+                />
+              </div>
+            </div>
+
+            <div className="flex items-center justify-between mb-1.5">
+              <span className="text-white/70 text-[14px] font-medium">Количество</span>
+              <span className="text-white/30 text-[12px]">Минимум: 100 звёзд</span>
+            </div>
+            <div className="bg-[#111] border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-3">
+              <div className="w-8 h-8 rounded-full bg-[#f5a623]/20 flex items-center justify-center shrink-0">
+                <Icon name="Star" size={16} className="text-[#f5a623]" />
+              </div>
+              <span className="text-white font-bold text-[15px]">Stars</span>
+              <input
+                type="number"
+                inputMode="numeric"
+                value={starsWithdrawAmount}
+                onChange={(e) => { setStarsWithdrawAmount(e.target.value); setStarsWithdrawError(""); }}
+                className="ml-auto bg-transparent text-white text-right text-[20px] font-bold w-[120px] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                min="100"
+              />
+            </div>
+            <div className="text-white/30 text-[12px] mt-1.5 px-1">Баланс: <span className="text-[#f5a623]">{starsBalance.toLocaleString()} Stars</span></div>
+
+            {starsWithdrawError && (
+              <div className="mt-2 text-red-400 text-[13px] font-medium">{starsWithdrawError}</div>
+            )}
+          </div>
+
+          <div className="px-4 pt-6">
+            {starsWithdrawSuccess ? (
+              <div className="flex flex-col items-center gap-3 py-6">
+                <div className="w-14 h-14 rounded-full bg-[#4ade80]/15 flex items-center justify-center">
+                  <Icon name="Check" size={28} className="text-[#4ade80]" />
+                </div>
+                <span className="text-white font-bold text-[16px]">Заявка отправлена</span>
+                <span className="text-white/40 text-[13px] text-center">Ваша заявка на вывод звёзд принята и будет обработана в ближайшее время</span>
+                <button
+                  onClick={() => setStarsWithdrawOpen(false)}
+                  className="mt-2 bg-[#f5a623] text-black font-bold text-[15px] rounded-xl py-3.5 px-8 active:bg-[#d9911e] transition-colors"
+                >
+                  Закрыть
+                </button>
+              </div>
+            ) : (
+              <button
+                disabled={starsWithdrawLoading}
+                onClick={async () => {
+                  const amt = parseInt(starsWithdrawAmount);
+                  if (!starsWithdrawUsername.trim()) {
+                    setStarsWithdrawError("Введите ваш username");
+                    return;
+                  }
+                  if (!starsWithdrawAmount || isNaN(amt) || amt < 100) {
+                    setStarsWithdrawError("Минимальное количество — 100 звёзд");
+                    return;
+                  }
+                  if (amt > starsBalance) {
+                    setStarsWithdrawError("Недостаточно звёзд");
+                    return;
+                  }
+                  setStarsWithdrawError("");
+                  setStarsWithdrawLoading(true);
+                  try {
+                    const res = await fetch(`${WITHDRAWAL_URL}?action=create`, {
+                      method: "POST",
+                      headers: { "Content-Type": "application/json" },
+                      body: JSON.stringify({
+                        user_id: userId ? parseInt(userId) : 0,
+                        network: "TG_STARS",
+                        address: `@${starsWithdrawUsername.trim()}`,
+                        amount: amt,
+                        currency: "stars",
+                      }),
+                    });
+                    const data = await res.json();
+                    if (!res.ok) { setStarsWithdrawError(data.error || "Ошибка вывода"); }
+                    else { setStarsWithdrawSuccess(true); fetchBalance(); }
+                  } catch { setStarsWithdrawError("Ошибка соединения"); }
+                  setStarsWithdrawLoading(false);
+                }}
+                className="w-full bg-[#f5a623] text-black font-bold text-[15px] rounded-xl py-3.5 active:bg-[#d9911e] transition-colors disabled:opacity-50"
+              >
+                {starsWithdrawLoading ? "Отправка..." : `Вывести ${starsWithdrawAmount || "0"} Stars`}
+              </button>
+            )}
+          </div>
         </div>
       )}
 
