@@ -1405,9 +1405,10 @@ const Index = () => {
       {gameOpen && (
         <JaguarGems
           onClose={() => setGameOpen(false)}
-          balance={currency === "usdt" ? userBalance : starsBalance}
-          onBalanceChange={(delta) => {
-            if (currency === "usdt") setUserBalance(prev => +(prev + delta).toFixed(2));
+          usdtBalance={userBalance}
+          starsBalance={starsBalance}
+          onBalanceChange={(cur, delta) => {
+            if (cur === "usdt") setUserBalance(prev => +(prev + delta).toFixed(2));
             else setStarsBalance(prev => +(prev + delta).toFixed(2));
           }}
         />
