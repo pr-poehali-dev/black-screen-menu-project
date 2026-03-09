@@ -1308,7 +1308,7 @@ const Index = () => {
 
       <div className="flex-1 overflow-y-auto">
         {active === 1 && (
-          <div className="px-3 pt-3 pb-4">
+          <div className="px-3 pt-3 pb-4 flex flex-col gap-4">
             <div className="relative w-full overflow-hidden rounded-xl" style={{ aspectRatio: "16/7" }}>
               {bannerSlides.map((slide, idx) => (
                 <img
@@ -1326,6 +1326,39 @@ const Index = () => {
                     className={`w-1.5 h-1.5 rounded-full transition-all ${idx === currentSlide ? "bg-[#4ade80] w-4" : "bg-white/30"}`}
                   />
                 ))}
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center gap-2 mb-3">
+                <Icon name="Zap" size={18} className="text-white" />
+                <span className="text-white font-semibold text-base">Быстрые игры</span>
+              </div>
+              <div className="grid grid-cols-3 gap-3">
+                <button
+                  onClick={() => setGameOpen(true)}
+                  className="group flex flex-col bg-[#111820] border border-white/5 rounded-2xl overflow-hidden active:scale-[0.97] transition-transform"
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
+                    <img
+                      src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/f1e4916f-f48b-4540-9264-37fcf20a1da1.jpg"
+                      alt="Mines"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                </button>
+                <button
+                  onClick={() => setCrashOpen(true)}
+                  className="group flex flex-col bg-[#111820] border border-white/5 rounded-2xl overflow-hidden active:scale-[0.97] transition-transform"
+                >
+                  <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
+                    <img
+                      src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/31800339-f971-426e-83e0-567f722a924c.jpg"
+                      alt="Crash X"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                    />
+                  </div>
+                </button>
               </div>
             </div>
           </div>
