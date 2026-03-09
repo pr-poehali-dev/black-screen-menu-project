@@ -81,10 +81,6 @@ function BetPanel({ cur, betInput, setBetInput, minBet, bal, quickBets, sym, isF
           <button onClick={placeBet} disabled={betVal < minBet || betVal > bal} className="w-[80px] rounded-md bg-gradient-to-b from-purple-500 to-purple-700 text-white font-extrabold text-xs active:scale-[0.96] transition-transform disabled:opacity-40">
             СТАВКА
           </button>
-        ) : (isCrashed || isCashedOut) ? (
-          <button onClick={onNewRound} className={`w-[80px] rounded-md font-extrabold text-xs active:scale-[0.96] transition-transform ${isCrashed ? 'bg-gradient-to-b from-red-500 to-red-700 text-white' : 'bg-gradient-to-b from-purple-500 to-purple-700 text-white'}`}>
-            {isCrashed ? "ЗАНОВО" : "ЕЩЁ"}
-          </button>
         ) : (
           <button disabled className="w-[80px] rounded-md bg-white/5 text-white/20 font-bold text-[10px]">ЖДИТЕ...</button>
         )}
@@ -179,8 +175,8 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
             setTimeout(() => {
               setBetPlaced(0);
               startRoundWait();
-            }, 2500);
-          }, 600);
+            }, 1200);
+          }, 500);
         }
         return;
       }
@@ -215,7 +211,11 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     onRefreshBalance();
     setPhase("cashedOut");
     setHistory(prev => [crashRef.current, ...prev.slice(0, 29)]);
-  }, [phase, betPlaced, multiplier, cur, userId, onBalanceChange, onRefreshBalance]);
+    setTimeout(() => {
+      setBetPlaced(0);
+      startRoundWait();
+    }, 1500);
+  }, [phase, betPlaced, multiplier, cur, userId, onBalanceChange, onRefreshBalance, startRoundWait]);
 
   useEffect(() => {
     return () => {
