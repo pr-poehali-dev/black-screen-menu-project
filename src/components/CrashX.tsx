@@ -40,28 +40,46 @@ interface Props {
   initialCurrency: Cur;
 }
 
-function BetPanel({ betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, isCashedOut, cashOut, placeBet, betVal, currentWin, step }: {
+function BetPanel({
+  betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, isCashedOut, cashOut, placeBet, betVal, currentWin, step,
+  autoBet, setAutoBet, autoCashoutOn, setAutoCashoutOn, autoCashout, setAutoCashout, multiplier,
+}: {
   betInput: string; setBetInput: (v: string) => void; minBet: number; bal: number; quickBets: number[]; sym: string;
   isFlying: boolean; hasBet: boolean; isCashedOut: boolean; cashOut: () => void; placeBet: () => void; betVal: number;
   currentWin: number; step: number;
+  autoBet: boolean; setAutoBet: (v: boolean) => void;
+  autoCashoutOn: boolean; setAutoCashoutOn: (v: boolean) => void;
+  autoCashout: string; setAutoCashout: (v: string) => void;
+  multiplier: number;
 }) {
-  const [autoCashout, setAutoCashout] = useState("2.00");
   const blocked = isFlying && !hasBet;
 
   return (
     <div className="bg-[#1e1b3a] border border-[#2d2755] rounded-2xl p-3 space-y-2.5">
       <div className="flex items-center gap-3">
-        <label className="flex items-center gap-1.5 cursor-pointer">
-          <div className="w-8 h-4 bg-[#2d2755] rounded-full relative">
-            <div className="w-3.5 h-3.5 bg-[#4a4570] rounded-full absolute top-0.5 left-0.5" />
-          </div>
-          <span className="text-white/60 text-xs font-medium">Автоставка</span>
+        <label className="flex items-center gap-1.5 cursor-pointer" onClick={() => setAutoBet(!autoBet)}>
+          {autoBet ? (
+            <div className="w-8 h-4 bg-purple-600 rounded-full relative">
+              <div className="w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 right-0.5" />
+            </div>
+          ) : (
+            <div className="w-8 h-4 bg-[#2d2755] rounded-full relative">
+              <div className="w-3.5 h-3.5 bg-[#4a4570] rounded-full absolute top-0.5 left-0.5" />
+            </div>
+          )}
+          <span className={`text-xs font-medium ${autoBet ? "text-white" : "text-white/60"}`}>Автоставка</span>
         </label>
-        <label className="flex items-center gap-1.5 cursor-pointer">
-          <div className="w-8 h-4 bg-[#2d2755] rounded-full relative">
-            <div className="w-3.5 h-3.5 bg-[#4a4570] rounded-full absolute top-0.5 left-0.5" />
-          </div>
-          <span className="text-white/60 text-xs font-medium">Автовывод</span>
+        <label className="flex items-center gap-1.5 cursor-pointer" onClick={() => setAutoCashoutOn(!autoCashoutOn)}>
+          {autoCashoutOn ? (
+            <div className="w-8 h-4 bg-purple-600 rounded-full relative">
+              <div className="w-3.5 h-3.5 bg-white rounded-full absolute top-0.5 right-0.5" />
+            </div>
+          ) : (
+            <div className="w-8 h-4 bg-[#2d2755] rounded-full relative">
+              <div className="w-3.5 h-3.5 bg-[#4a4570] rounded-full absolute top-0.5 left-0.5" />
+            </div>
+          )}
+          <span className={`text-xs font-medium ${autoCashoutOn ? "text-white" : "text-white/60"}`}>Автовывод</span>
         </label>
         <div className="ml-auto flex items-center bg-[#2d2755] rounded-lg px-2.5 py-1.5">
           <span className="text-white/40 text-xs mr-1">x</span>
@@ -164,6 +182,14 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [cashedOut2, setCashedOut2] = useState(false);
   const [loadingDone, setLoadingDone] = useState(false);
 
+  // Autobet / autocashout state
+  const [autoBet1, setAutoBet1] = useState(false);
+  const [autoBet2, setAutoBet2] = useState(false);
+  const [autoCashoutOn1, setAutoCashoutOn1] = useState(false);
+  const [autoCashoutOn2, setAutoCashoutOn2] = useState(false);
+  const [autoCashout1, setAutoCashout1] = useState("2.00");
+  const [autoCashout2, setAutoCashout2] = useState("2.00");
+
   const animRef = useRef<number>(0);
   const crashRef = useRef(0);
   const cashedOut1Ref = useRef(false);
@@ -183,6 +209,14 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const betResetTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const onRefreshBalanceRef = useRef(onRefreshBalance);
 
+  // Autobet / autocashout refs (avoid stale closures)
+  const autoBet1Ref = useRef(false);
+  const autoBet2Ref = useRef(false);
+  const autoCashoutOn1Ref = useRef(false);
+  const autoCashoutOn2Ref = useRef(false);
+  const autoCashout1Ref = useRef("2.00");
+  const autoCashout2Ref = useRef("2.00");
+
   const bal = cur === "usdt" ? usdtBalance : starsBalance;
   const betVal1 = parseFloat(betInput1) || 0;
   const betVal2 = parseFloat(betInput2) || 0;
@@ -196,6 +230,14 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   useEffect(() => { bet1Ref.current = bet1Placed; }, [bet1Placed]);
   useEffect(() => { bet2Ref.current = bet2Placed; }, [bet2Placed]);
   useEffect(() => { onRefreshBalanceRef.current = onRefreshBalance; }, [onRefreshBalance]);
+
+  // Sync autobet/autocashout refs
+  useEffect(() => { autoBet1Ref.current = autoBet1; }, [autoBet1]);
+  useEffect(() => { autoBet2Ref.current = autoBet2; }, [autoBet2]);
+  useEffect(() => { autoCashoutOn1Ref.current = autoCashoutOn1; }, [autoCashoutOn1]);
+  useEffect(() => { autoCashoutOn2Ref.current = autoCashoutOn2; }, [autoCashoutOn2]);
+  useEffect(() => { autoCashout1Ref.current = autoCashout1; }, [autoCashout1]);
+  useEffect(() => { autoCashout2Ref.current = autoCashout2; }, [autoCashout2]);
 
   /* ---------- Loading phase ---------- */
   useEffect(() => {
@@ -215,6 +257,64 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     return () => clearInterval(t);
   }, [loadingDone]);
 
+  // Define placeBet / cashOut before the polling effect so refs can be created
+  const placeBet1 = useCallback(async () => {
+    const bv = parseFloat(betInput1Ref.current) || 0;
+    const b = cur === "usdt" ? usdtBalance : starsBalance;
+    const mb = cur === "usdt" ? MIN_BET_USDT : MIN_BET_STARS;
+    if (bv < mb || bv > b) return;
+    const res = await apiBalance(userId, "bet", bv, cur);
+    if (!res || !res.ok) return;
+    onBalanceChange(cur, -bv);
+    setBet1Placed(bv);
+    setCurrentWin1(0);
+  }, [cur, usdtBalance, starsBalance, userId, onBalanceChange]);
+
+  const placeBet2 = useCallback(async () => {
+    const bv = parseFloat(betInput2Ref.current) || 0;
+    const b = cur === "usdt" ? usdtBalance : starsBalance;
+    const mb = cur === "usdt" ? MIN_BET_USDT : MIN_BET_STARS;
+    if (bv < mb || bv > b) return;
+    const res = await apiBalance(userId, "bet", bv, cur);
+    if (!res || !res.ok) return;
+    onBalanceChange(cur, -bv);
+    setBet2Placed(bv);
+    setCurrentWin2(0);
+  }, [cur, usdtBalance, starsBalance, userId, onBalanceChange]);
+
+  const cashOut1 = useCallback(async () => {
+    if (phaseRef.current !== "flying" || cashedOut1Ref.current || bet1Ref.current <= 0) return;
+    cashedOut1Ref.current = true;
+    setCashedOut1(true);
+    const winnings = +(bet1Ref.current * multiplier).toFixed(2);
+    setCurrentWin1(winnings);
+    apiBalance(userId, "win", winnings, cur);
+    onBalanceChange(cur, winnings);
+    onRefreshBalance();
+  }, [multiplier, cur, userId, onBalanceChange, onRefreshBalance]);
+
+  const cashOut2 = useCallback(async () => {
+    if (phaseRef.current !== "flying" || cashedOut2Ref.current || bet2Ref.current <= 0) return;
+    cashedOut2Ref.current = true;
+    setCashedOut2(true);
+    const winnings = +(bet2Ref.current * multiplier).toFixed(2);
+    setCurrentWin2(winnings);
+    apiBalance(userId, "win", winnings, cur);
+    onBalanceChange(cur, winnings);
+    onRefreshBalance();
+  }, [multiplier, cur, userId, onBalanceChange, onRefreshBalance]);
+
+  // Refs for placeBet / cashOut functions (to avoid stale closures in animation & polling)
+  const placeBet1Ref = useRef(placeBet1);
+  const placeBet2Ref = useRef(placeBet2);
+  const cashOut1Ref_fn = useRef(cashOut1);
+  const cashOut2Ref_fn = useRef(cashOut2);
+
+  useEffect(() => { placeBet1Ref.current = placeBet1; }, [placeBet1]);
+  useEffect(() => { placeBet2Ref.current = placeBet2; }, [placeBet2]);
+  useEffect(() => { cashOut1Ref_fn.current = cashOut1; }, [cashOut1]);
+  useEffect(() => { cashOut2Ref_fn.current = cashOut2; }, [cashOut2]);
+
   /* ---------- Server polling ---------- */
   useEffect(() => {
     if (!loadingDone) return;
@@ -228,7 +328,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
         const now = Date.now() / 1000;
         const localElapsed = Math.max(0, (now - serverStartedAtRef.current) + timeOffsetRef.current);
-        const m = +(1 + localElapsed * 0.5).toFixed(2);
+        const m = +Math.pow(Math.E, localElapsed * 0.27).toFixed(2);
 
         const yBase = Math.max(100 - localElapsed * 8, 25);
         const wobble = Math.sin(localElapsed * 3) * 2.5;
@@ -243,6 +343,21 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           setFlyAway(true);
           animatingRef.current = false;
           return;
+        }
+
+        // Auto cashout panel 1
+        if (autoCashoutOn1Ref.current && bet1Ref.current > 0 && !cashedOut1Ref.current) {
+          const target = parseFloat(autoCashout1Ref.current) || 0;
+          if (target > 1 && m >= target) {
+            cashOut1Ref_fn.current();
+          }
+        }
+        // Auto cashout panel 2
+        if (autoCashoutOn2Ref.current && bet2Ref.current > 0 && !cashedOut2Ref.current) {
+          const target = parseFloat(autoCashout2Ref.current) || 0;
+          if (target > 1 && m >= target) {
+            cashOut2Ref_fn.current();
+          }
         }
 
         if (bet1Ref.current > 0 && !cashedOut1Ref.current) setCurrentWin1(+(bet1Ref.current * m).toFixed(2));
@@ -277,7 +392,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           if (crashTimeoutRef.current) clearTimeout(crashTimeoutRef.current);
           if (betResetTimeoutRef.current) clearTimeout(betResetTimeoutRef.current);
           phaseRef.current = "roundWait";
-          roundIdRef.current = state.round_id;
           setPhase("roundWait");
           setMultiplier(1.0);
           setRocketPos({ x: 0, y: 100 });
@@ -286,6 +400,17 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           setCurrentWin2(0);
           setBet1Placed(0);
           setBet2Placed(0);
+
+          // New round detected — trigger autobet
+          if (state.round_id !== roundIdRef.current) {
+            roundIdRef.current = state.round_id;
+            setTimeout(() => {
+              if (autoBet1Ref.current) placeBet1Ref.current();
+              if (autoBet2Ref.current) placeBet2Ref.current();
+            }, 500);
+          } else {
+            roundIdRef.current = state.round_id;
+          }
         }
 
         const progress = Math.min((state.elapsed / (ROUND_WAIT / 1000)) * 100, 100);
@@ -349,52 +474,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       if (betResetTimeoutRef.current) clearTimeout(betResetTimeoutRef.current);
     };
   }, [loadingDone]);
-
-  const placeBet1 = useCallback(async () => {
-    const bv = parseFloat(betInput1Ref.current) || 0;
-    const b = cur === "usdt" ? usdtBalance : starsBalance;
-    const mb = cur === "usdt" ? MIN_BET_USDT : MIN_BET_STARS;
-    if (bv < mb || bv > b) return;
-    const res = await apiBalance(userId, "bet", bv, cur);
-    if (!res || !res.ok) return;
-    onBalanceChange(cur, -bv);
-    setBet1Placed(bv);
-    setCurrentWin1(0);
-  }, [cur, usdtBalance, starsBalance, userId, onBalanceChange]);
-
-  const placeBet2 = useCallback(async () => {
-    const bv = parseFloat(betInput2Ref.current) || 0;
-    const b = cur === "usdt" ? usdtBalance : starsBalance;
-    const mb = cur === "usdt" ? MIN_BET_USDT : MIN_BET_STARS;
-    if (bv < mb || bv > b) return;
-    const res = await apiBalance(userId, "bet", bv, cur);
-    if (!res || !res.ok) return;
-    onBalanceChange(cur, -bv);
-    setBet2Placed(bv);
-    setCurrentWin2(0);
-  }, [cur, usdtBalance, starsBalance, userId, onBalanceChange]);
-
-  const cashOut1 = useCallback(async () => {
-    if (phase !== "flying" || cashedOut1Ref.current || bet1Ref.current <= 0) return;
-    cashedOut1Ref.current = true;
-    setCashedOut1(true);
-    const winnings = +(bet1Ref.current * multiplier).toFixed(2);
-    setCurrentWin1(winnings);
-    apiBalance(userId, "win", winnings, cur);
-    onBalanceChange(cur, winnings);
-    onRefreshBalance();
-  }, [phase, multiplier, cur, userId, onBalanceChange, onRefreshBalance]);
-
-  const cashOut2 = useCallback(async () => {
-    if (phase !== "flying" || cashedOut2Ref.current || bet2Ref.current <= 0) return;
-    cashedOut2Ref.current = true;
-    setCashedOut2(true);
-    const winnings = +(bet2Ref.current * multiplier).toFixed(2);
-    setCurrentWin2(winnings);
-    apiBalance(userId, "win", winnings, cur);
-    onBalanceChange(cur, winnings);
-    onRefreshBalance();
-  }, [phase, multiplier, cur, userId, onBalanceChange, onRefreshBalance]);
 
   useEffect(() => {
     return () => {
@@ -467,8 +546,18 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const hasBet1 = bet1Placed > 0;
   const hasBet2 = bet2Placed > 0;
 
-  const panel1Props = { betInput: betInput1, setBetInput: setBetInput1, minBet, bal, quickBets, sym, isFlying, hasBet: hasBet1, isCashedOut: cashedOut1, cashOut: cashOut1, placeBet: placeBet1, betVal: betVal1, currentWin: currentWin1, step };
-  const panel2Props = { betInput: betInput2, setBetInput: setBetInput2, minBet, bal, quickBets, sym, isFlying, hasBet: hasBet2, isCashedOut: cashedOut2, cashOut: cashOut2, placeBet: placeBet2, betVal: betVal2, currentWin: currentWin2, step };
+  const panel1Props = {
+    betInput: betInput1, setBetInput: setBetInput1, minBet, bal, quickBets, sym, isFlying, hasBet: hasBet1,
+    isCashedOut: cashedOut1, cashOut: cashOut1, placeBet: placeBet1, betVal: betVal1, currentWin: currentWin1, step,
+    autoBet: autoBet1, setAutoBet: setAutoBet1, autoCashoutOn: autoCashoutOn1, setAutoCashoutOn: setAutoCashoutOn1,
+    autoCashout: autoCashout1, setAutoCashout: setAutoCashout1, multiplier,
+  };
+  const panel2Props = {
+    betInput: betInput2, setBetInput: setBetInput2, minBet, bal, quickBets, sym, isFlying, hasBet: hasBet2,
+    isCashedOut: cashedOut2, cashOut: cashOut2, placeBet: placeBet2, betVal: betVal2, currentWin: currentWin2, step,
+    autoBet: autoBet2, setAutoBet: setAutoBet2, autoCashoutOn: autoCashoutOn2, setAutoCashoutOn: setAutoCashoutOn2,
+    autoCashout: autoCashout2, setAutoCashout: setAutoCashout2, multiplier,
+  };
 
   return (
     <div className="fixed inset-0 z-[200] bg-[#13112a] flex flex-col overflow-auto">

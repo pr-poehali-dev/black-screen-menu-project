@@ -1,5 +1,6 @@
 """Серверные раунды crash-игры: генерация, синхронизация, история"""
 import json
+import math
 import os
 import random
 import time
@@ -53,7 +54,7 @@ def handler(event, context):
             elapsed = 0
 
         if phase == 'flying':
-            m = round(1 + elapsed * 0.5, 2)
+            m = round(math.pow(math.e, elapsed * 0.27), 2)
             if m >= float(crash_point):
                 cur.execute("INSERT INTO crash_rounds (crash_point) VALUES (%s)" % float(crash_point))
                 cur.execute("UPDATE crash_game_state SET phase = 'crashed', updated_at = NOW() WHERE id = 1")
