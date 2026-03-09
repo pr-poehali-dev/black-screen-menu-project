@@ -49,10 +49,10 @@ const navItems = [
 ];
 
 const menuItems = [
-  { icon: "Spade", label: "Казино", fallback: "Clover" },
-  { icon: "Briefcase", label: "Кейсы" },
-  { icon: "Gift", label: "Бонусы" },
-  { icon: "Headphones", label: "Поддержка 24/7" },
+  { icon: "Spade", label: "Казино", fallback: "Clover", desc: "Слоты и игры", color: "#4ade80" },
+  { icon: "Briefcase", label: "Кейсы", desc: "Открывай и выигрывай", color: "#3b82f6" },
+  { icon: "Gift", label: "Бонусы", desc: "Фриспины и акции", color: "#f5a623" },
+  { icon: "Headphones", label: "Поддержка 24/7", desc: "Быстрая помощь", color: "#a78bfa" },
 ];
 
 const profileSections = [
@@ -232,47 +232,51 @@ const Index = () => {
               <Icon name="ChevronRight" size={18} className="text-white/30 ml-auto" />
             </button>
 
-            <div className="h-px bg-[#4ade80]/15 mx-5" />
-
-            <div className="flex flex-col py-3 px-2">
-              {menuItems.map((item, idx) => (
-                <div key={item.label}>
-                  <button
-                    className="w-full flex items-center gap-4 px-3 py-3.5 rounded-xl hover:bg-[#4ade80]/5 active:bg-[#4ade80]/10 transition-colors"
-                    onClick={() => {
-                      if (item.label === "Казино") { setMenuOpen(false); setActive(2); }
-                      if (item.label === "Кейсы") { setMenuOpen(false); setActive(4); }
-                      if (item.label === "Бонусы") { setMenuOpen(false); setActive(3); }
-                      if (item.label === "Поддержка 24/7") { window.open("https://t.me/Jaguar_helpi_bot", "_blank"); }
-                    }}
+            <div className="px-4 pt-4 pb-3 grid grid-cols-2 gap-2.5">
+              {menuItems.map((item) => (
+                <button
+                  key={item.label}
+                  className="flex flex-col gap-2.5 bg-white/[0.04] border border-white/[0.06] rounded-2xl p-3.5 active:bg-white/[0.08] transition-colors text-left"
+                  onClick={() => {
+                    if (item.label === "Казино") { setMenuOpen(false); setActive(2); }
+                    if (item.label === "Кейсы") { setMenuOpen(false); setActive(4); }
+                    if (item.label === "Бонусы") { setMenuOpen(false); setActive(3); }
+                    if (item.label === "Поддержка 24/7") { window.open("https://t.me/Jaguar_helpi_bot", "_blank"); }
+                  }}
+                >
+                  <div
+                    className="w-10 h-10 rounded-xl flex items-center justify-center"
+                    style={{ backgroundColor: `${item.color}15` }}
                   >
                     <Icon
                       name={item.icon}
                       fallback={item.fallback || item.icon}
-                      size={22}
-                      className="text-[#4ade80]/60"
+                      size={20}
+                      style={{ color: item.color }}
                     />
-                    <span className="text-white text-sm font-medium">{item.label}</span>
-                  </button>
-                  {idx < menuItems.length - 1 && (
-                    <div className="h-px bg-[#4ade80]/20 mx-3" />
-                  )}
-                </div>
+                  </div>
+                  <div className="flex flex-col">
+                    <span className="text-white text-[13px] font-semibold">{item.label}</span>
+                    <span className="text-white/30 text-[11px] leading-tight mt-0.5">{item.desc}</span>
+                  </div>
+                </button>
               ))}
-
-              {isAdmin && (
-                <>
-                  <div className="h-px bg-[#4ade80]/20 mx-3" />
-                  <button
-                    className="w-full flex items-center gap-4 px-3 py-3.5 rounded-xl hover:bg-[#4ade80]/5 active:bg-[#4ade80]/10 transition-colors"
-                    onClick={() => { setMenuOpen(false); setAdminOpen(true); }}
-                  >
-                    <Icon name="Shield" size={22} className="text-red-400/80" />
-                    <span className="text-red-400 text-sm font-medium">Админ-панель</span>
-                  </button>
-                </>
-              )}
             </div>
+
+            {isAdmin && (
+              <div className="px-4 pb-3">
+                <button
+                  className="w-full flex items-center gap-3 bg-red-500/[0.06] border border-red-500/10 rounded-2xl px-4 py-3 active:bg-red-500/10 transition-colors"
+                  onClick={() => { setMenuOpen(false); setAdminOpen(true); }}
+                >
+                  <div className="w-9 h-9 rounded-xl bg-red-500/10 flex items-center justify-center shrink-0">
+                    <Icon name="Shield" size={18} className="text-red-400" />
+                  </div>
+                  <span className="text-red-400 text-[13px] font-semibold">Админ-панель</span>
+                  <Icon name="ChevronRight" size={16} className="text-red-400/30 ml-auto" />
+                </button>
+              </div>
+            )}
           </div>
           <button
             onClick={() => setMenuOpen(false)}
