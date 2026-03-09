@@ -7,7 +7,7 @@ const MIN_BET_STARS = 5;
 const QUICK_BETS_USDT = [1, 5, 10, 50];
 const QUICK_BETS_STARS = [5, 25, 50, 100];
 const ROUND_WAIT = 5000;
-const JETPACK_GUY = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/612e35f3-b481-4066-bfb9-758bdc122ff7.jpg";
+const JETPACK_GUY = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/dd353e14-25fa-4b18-9651-4e5f9d732b31.jpg";
 
 type Cur = "usdt" | "stars";
 type Phase = "loading" | "roundWait" | "flying" | "crashed" | "cashedOut";
