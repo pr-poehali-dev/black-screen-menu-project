@@ -1,6 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import JaguarGems from "@/components/JaguarGems";
 import CrashX from "@/components/CrashX";
+import CaseRoulette from "@/components/CaseRoulette";
 
 const copyId = (id: string | number) => {
   navigator.clipboard.writeText(String(id));
@@ -120,6 +121,7 @@ const Index = () => {
   const [starsWithdrawSuccess, setStarsWithdrawSuccess] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
   const [crashOpen, setCrashOpen] = useState(false);
+  const [caseRouletteOpen, setCaseRouletteOpen] = useState<number | null>(null);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -1400,7 +1402,10 @@ const Index = () => {
                       <span className="text-white font-bold text-[14px] leading-none ml-1" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{currency === "usdt" ? "$" : "★"}</span>
                     </div>
                   </div>
-                  <button className="w-full py-2 rounded-xl bg-[#4ade80] text-black font-bold text-[13px] active:scale-[0.97] transition-transform">
+                  <button
+                    onClick={() => setCaseRouletteOpen(val)}
+                    className="w-full py-2 rounded-xl bg-[#4ade80] text-black font-bold text-[13px] active:scale-[0.97] transition-transform"
+                  >
                     Купить
                   </button>
                 </div>
@@ -1440,6 +1445,14 @@ const Index = () => {
           ))}
         </div>
       </nav>
+
+      {caseRouletteOpen !== null && (
+        <CaseRoulette
+          caseValue={caseRouletteOpen}
+          currency={currency}
+          onClose={() => setCaseRouletteOpen(null)}
+        />
+      )}
 
       {crashOpen && (
         <CrashX
