@@ -199,7 +199,7 @@ const Index = () => {
     return (
       <div className="fixed inset-0 bg-black flex items-center justify-center">
         <div className="text-[#4ade80] font-extrabold text-2xl tracking-wide uppercase animate-pulse">
-          Jaguar Casino
+          Jaguar
         </div>
       </div>
     );
@@ -1234,7 +1234,7 @@ const Index = () => {
           />
           <div className="flex flex-col leading-none">
             <span className="text-[#4ade80] font-extrabold text-sm tracking-wide uppercase">Jaguar</span>
-            <span className="text-white font-extrabold text-[8px] tracking-[0.55em] uppercase text-right">casino</span>
+            <span className="text-white font-extrabold text-[8px] tracking-[0.55em] uppercase text-right">official</span>
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 ml-2">

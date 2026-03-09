@@ -43,7 +43,7 @@ const TelegramCallback = () => {
       {status === "loading" ? (
         <>
           <div className="text-[#4ade80] font-extrabold text-2xl tracking-wide uppercase animate-pulse mb-4">
-            Jaguar Casino
+            Jaguar
           </div>
           <p className="text-white/40 text-sm">Авторизация через Telegram...</p>
         </>

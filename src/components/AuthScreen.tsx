@@ -91,11 +91,11 @@ const AuthScreen = ({ onAuth }: AuthScreenProps) => {
       <div className="flex flex-col items-center gap-4 px-6 text-center">
         <img
           src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/bdee33c2-9378-4db9-9a37-c87d8ac6f8cf.jpg"
-          alt="Jaguar Casino"
+          alt="Jaguar"
           className={`w-20 h-20 object-contain ${authStarted && !webAppError ? "animate-pulse" : ""}`}
         />
         <span className="text-[#4ade80] font-extrabold text-lg tracking-wider uppercase">
-          Jaguar Casino
+          Jaguar
         </span>
 
         {webAppError ? (
