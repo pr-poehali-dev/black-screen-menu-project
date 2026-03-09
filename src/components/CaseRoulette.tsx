@@ -1,8 +1,6 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 
-const COIN_IMG = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/09505604-ab2c-4739-a8c6-b2fe02b7b598.jpg";
-
 const COIN_SIZE = 90;
 const VISIBLE_COINS = 5;
 const TOTAL_COINS = 50;
@@ -14,15 +12,33 @@ interface Coin {
   value: number;
   label: string;
   rarity: Rarity;
-  color: string;
-  glow: string;
 }
 
-const RARITY_COLORS: Record<Rarity, { bg: string; glow: string; border: string; text: string }> = {
-  common:    { bg: "from-gray-500 to-gray-700",     glow: "rgba(150,150,150,0.6)",  border: "#888",    text: "#ccc" },
-  rare:      { bg: "from-blue-500 to-blue-800",     glow: "rgba(59,130,246,0.7)",   border: "#3b82f6", text: "#93c5fd" },
-  epic:      { bg: "from-purple-500 to-purple-900", glow: "rgba(168,85,247,0.7)",   border: "#a855f7", text: "#d8b4fe" },
-  legendary: { bg: "from-yellow-400 to-orange-600", glow: "rgba(251,191,36,0.9)",   border: "#fbbf24", text: "#fef08a" },
+const RARITY_COLORS: Record<Rarity, {
+  bg1: string; bg2: string; bg3: string;
+  glow: string; border: string; text: string;
+  confetti: string[];
+}> = {
+  common: {
+    bg1: "#6b7280", bg2: "#4b5563", bg3: "#374151",
+    glow: "rgba(156,163,175,0.7)", border: "#9ca3af", text: "#e5e7eb",
+    confetti: ["#9ca3af", "#d1d5db", "#6b7280", "#f3f4f6"],
+  },
+  rare: {
+    bg1: "#3b82f6", bg2: "#1d4ed8", bg3: "#1e3a8a",
+    glow: "rgba(59,130,246,0.8)", border: "#60a5fa", text: "#bfdbfe",
+    confetti: ["#3b82f6", "#60a5fa", "#93c5fd", "#1d4ed8", "#06b6d4"],
+  },
+  epic: {
+    bg1: "#a855f7", bg2: "#7c3aed", bg3: "#581c87",
+    glow: "rgba(168,85,247,0.85)", border: "#c084fc", text: "#e9d5ff",
+    confetti: ["#a855f7", "#c084fc", "#d8b4fe", "#f472b6", "#ec4899", "#7c3aed"],
+  },
+  legendary: {
+    bg1: "#f59e0b", bg2: "#d97706", bg3: "#b45309",
+    glow: "rgba(251,191,36,0.95)", border: "#fbbf24", text: "#fef08a",
+    confetti: ["#fbbf24", "#fde68a", "#f59e0b", "#fb923c", "#ef4444", "#a3e635", "#34d399"],
+  },
 };
 
 function getRarity(multiplier: number): Rarity {
@@ -52,8 +68,7 @@ function generateCoins(currencySymbol: string, caseValue: number): Coin[] {
     else if (rand < 0.90) val = mid[Math.floor(Math.random() * mid.length)];
     else val = high[Math.floor(Math.random() * high.length)];
     const rarity = getRarity(val / caseValue);
-    const rc = RARITY_COLORS[rarity];
-    coins.push({ value: val, label: `${val}${currencySymbol}`, rarity, color: rc.bg, glow: rc.glow });
+    coins.push({ value: val, label: `${val}${currencySymbol}`, rarity });
   }
   return coins;
 }
@@ -68,35 +83,36 @@ function pickWinValue(caseValue: number): number {
   return high[high.length - 1];
 }
 
-interface Particle {
+interface ConfettiParticle {
   id: number;
   x: number;
-  y: number;
   color: string;
   rotation: number;
   scale: number;
-  vx: number;
-  vy: number;
+  shape: "rect" | "circle" | "star";
+  delay: number;
+  duration: number;
 }
 
-function Confetti({ active }: { active: boolean }) {
-  const [particles, setParticles] = useState<Particle[]>([]);
-  const colors = ["#fbbf24", "#4ade80", "#f472b6", "#60a5fa", "#a78bfa", "#fb923c", "#f87171"];
+function Confetti({ active, rarity }: { active: boolean; rarity: Rarity }) {
+  const [particles, setParticles] = useState<ConfettiParticle[]>([]);
+  const colors = RARITY_COLORS[rarity].confetti;
+  const count = rarity === "legendary" ? 90 : rarity === "epic" ? 70 : rarity === "rare" ? 50 : 30;
 
   useEffect(() => {
     if (!active) return;
-    const pts: Particle[] = Array.from({ length: 60 }, (_, i) => ({
+    const pts: ConfettiParticle[] = Array.from({ length: count }, (_, i) => ({
       id: i,
-      x: 20 + Math.random() * 60,
-      y: -10,
+      x: 5 + Math.random() * 90,
       color: colors[Math.floor(Math.random() * colors.length)],
       rotation: Math.random() * 360,
-      scale: 0.5 + Math.random() * 1,
-      vx: (Math.random() - 0.5) * 4,
-      vy: 2 + Math.random() * 4,
+      scale: 0.5 + Math.random() * 1.2,
+      shape: (["rect", "circle", "star"] as const)[Math.floor(Math.random() * 3)],
+      delay: Math.random() * 0.6,
+      duration: 1.8 + Math.random() * 2,
     }));
     setParticles(pts);
-    const timeout = setTimeout(() => setParticles([]), 3500);
+    const timeout = setTimeout(() => setParticles([]), 4000);
     return () => clearTimeout(timeout);
   }, [active]);
 
@@ -107,17 +123,99 @@ function Confetti({ active }: { active: boolean }) {
       {particles.map((p) => (
         <div
           key={p.id}
-          className="absolute w-2 h-2 rounded-sm"
+          className="absolute"
           style={{
             left: `${p.x}%`,
-            top: `${p.y}%`,
-            background: p.color,
+            top: "-20px",
+            width: p.shape === "star" ? 12 : p.shape === "circle" ? 8 : 8,
+            height: p.shape === "star" ? 12 : p.shape === "circle" ? 8 : 12,
+            background: p.shape === "circle" ? p.color : undefined,
+            borderRadius: p.shape === "circle" ? "50%" : p.shape === "rect" ? "2px" : "0",
+            color: p.shape === "star" ? p.color : undefined,
+            fontSize: p.shape === "star" ? 14 : undefined,
+            backgroundColor: p.shape === "rect" ? p.color : undefined,
             transform: `rotate(${p.rotation}deg) scale(${p.scale})`,
-            animation: `confettiFall ${1.5 + Math.random() * 2}s ease-in forwards`,
-            animationDelay: `${Math.random() * 0.5}s`,
+            animation: `confettiFall ${p.duration}s ease-in forwards`,
+            animationDelay: `${p.delay}s`,
+            opacity: 0,
           }}
-        />
+        >
+          {p.shape === "star" ? "★" : null}
+        </div>
       ))}
+    </div>
+  );
+}
+
+function CoinVisual({
+  rarity,
+  value,
+  symbol,
+  size,
+  isWin,
+  spinning,
+}: {
+  rarity: Rarity;
+  value: number;
+  symbol: string;
+  size: number;
+  isWin?: boolean;
+  spinning?: boolean;
+}) {
+  const rc = RARITY_COLORS[rarity];
+  const fontSize = size < 70 ? (value >= 100 ? 11 : 13) : size < 100 ? (value >= 100 ? 13 : 16) : (value >= 1000 ? 28 : value >= 100 ? 34 : 40);
+  const symSize = size < 70 ? 10 : size < 100 ? 14 : 20;
+
+  return (
+    <div
+      className="relative flex-shrink-0 flex flex-col items-center justify-center"
+      style={{
+        width: size,
+        height: size,
+        borderRadius: "50%",
+        background: `radial-gradient(circle at 35% 28%, ${rc.bg1}, ${rc.bg2} 50%, ${rc.bg3})`,
+        border: `${size >= 140 ? 3 : 2}px solid ${isWin ? rc.border : rc.border + "88"}`,
+        boxShadow: isWin
+          ? `0 0 30px ${rc.glow}, 0 0 60px ${rc.glow}66, inset 0 1px 0 rgba(255,255,255,0.3)`
+          : `0 0 10px ${rc.glow}44, inset 0 1px 0 rgba(255,255,255,0.2)`,
+        animation: isWin ? "coinPulse 0.8s ease-in-out infinite" : spinning ? "coinSpin 0.3s linear infinite" : "none",
+        transition: "box-shadow 0.3s ease",
+      }}
+    >
+      <div
+        className="absolute inset-0 rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle at 35% 25%, rgba(255,255,255,0.35), transparent 55%)" }}
+      />
+      <div
+        className="absolute inset-0 rounded-full pointer-events-none"
+        style={{ background: "radial-gradient(circle at 65% 80%, rgba(0,0,0,0.3), transparent 50%)" }}
+      />
+      {size >= 140 && (
+        <div
+          className="absolute inset-3 rounded-full pointer-events-none"
+          style={{ border: `1px solid ${rc.border}44` }}
+        />
+      )}
+      <span
+        className="font-extrabold relative z-10 leading-none"
+        style={{
+          fontSize,
+          color: "#fff",
+          textShadow: `0 0 12px ${rc.glow}, 0 2px 4px rgba(0,0,0,0.9)`,
+        }}
+      >
+        {value}
+      </span>
+      <span
+        className="font-bold relative z-10 leading-none"
+        style={{
+          fontSize: symSize,
+          color: rc.text,
+          textShadow: `0 0 8px ${rc.glow}`,
+        }}
+      >
+        {symbol}
+      </span>
     </div>
   );
 }
@@ -168,8 +266,7 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
     }
     if (targetIdx < VISIBLE_COINS + 5) {
       const rarity = getRarity(desiredWinValue / caseValue);
-      const rc = RARITY_COLORS[rarity];
-      coins[TOTAL_COINS - 8] = { value: desiredWinValue, label: `${desiredWinValue}${currencySymbol}`, rarity, color: rc.bg, glow: rc.glow };
+      coins[TOTAL_COINS - 8] = { value: desiredWinValue, label: `${desiredWinValue}${currencySymbol}`, rarity };
       targetIdx = TOTAL_COINS - 8;
     }
 
@@ -203,9 +300,7 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
         setTimeout(() => {
           setShowResult(true);
           setPhase("result");
-          if (wc.rarity === "epic" || wc.rarity === "legendary") {
-            setConfettiActive(true);
-          }
+          setConfettiActive(true);
         }, 600);
       }
     }
@@ -251,52 +346,67 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
     <>
       <style>{`
         @keyframes confettiFall {
-          0% { transform: translateY(0) rotate(0deg); opacity: 1; }
-          100% { transform: translateY(120vh) rotate(720deg); opacity: 0; }
+          0%   { transform: translateY(0) rotate(0deg); opacity: 1; }
+          100% { transform: translateY(110vh) rotate(720deg); opacity: 0; }
         }
         @keyframes spinnerGlow {
           0%, 100% { box-shadow: 0 0 20px rgba(74,222,128,0.4); }
-          50% { box-shadow: 0 0 40px rgba(74,222,128,0.9), 0 0 60px rgba(74,222,128,0.4); }
+          50%       { box-shadow: 0 0 50px rgba(74,222,128,1), 0 0 80px rgba(74,222,128,0.5); }
         }
         @keyframes coinPulse {
-          0%, 100% { transform: scale(1.1); }
-          50% { transform: scale(1.18); }
+          0%, 100% { transform: scale(1.08); }
+          50%       { transform: scale(1.16); }
+        }
+        @keyframes coinSpin {
+          0%   { filter: brightness(1); }
+          50%  { filter: brightness(1.3); }
+          100% { filter: brightness(1); }
         }
         @keyframes resultSlideUp {
-          from { opacity: 0; transform: translateY(40px) scale(0.85); }
-          to { opacity: 1; transform: translateY(0) scale(1); }
+          from { opacity: 0; transform: translateY(50px) scale(0.85); }
+          to   { opacity: 1; transform: translateY(0) scale(1); }
         }
         @keyframes bigCoinAppear {
-          0% { opacity: 0; transform: scale(0.3) rotate(-20deg); }
-          60% { transform: scale(1.15) rotate(5deg); }
-          80% { transform: scale(0.95) rotate(-2deg); }
+          0%   { opacity: 0; transform: scale(0.2) rotate(-30deg); }
+          60%  { transform: scale(1.18) rotate(6deg); }
+          80%  { transform: scale(0.94) rotate(-2deg); }
           100% { opacity: 1; transform: scale(1) rotate(0deg); }
-        }
-        @keyframes shimmer {
-          0% { background-position: -200% center; }
-          100% { background-position: 200% center; }
         }
         @keyframes starSparkle {
           0%, 100% { opacity: 0; transform: scale(0) rotate(0deg); }
-          50% { opacity: 1; transform: scale(1) rotate(180deg); }
+          50%       { opacity: 1; transform: scale(1) rotate(180deg); }
         }
-        @keyframes floatUp {
-          0% { opacity: 0; transform: translateY(0); }
-          20% { opacity: 1; }
-          100% { opacity: 0; transform: translateY(-60px); }
+        @keyframes floatDot {
+          0%   { opacity: 0; transform: translateY(0) scale(0.8); }
+          30%  { opacity: 1; transform: translateY(-6px) scale(1); }
+          100% { opacity: 0; transform: translateY(-20px) scale(0.6); }
         }
-        @keyframes scanLine {
-          0% { top: 0%; }
-          100% { top: 100%; }
+        @keyframes shimmerBar {
+          0%   { background-position: -200% center; }
+          100% { background-position: 200% center; }
+        }
+        @keyframes glowPulse {
+          0%, 100% { opacity: 0.4; }
+          50%       { opacity: 1; }
+        }
+        @keyframes rarityBadgePop {
+          0%   { opacity: 0; transform: scale(0.5); }
+          70%  { transform: scale(1.1); }
+          100% { opacity: 1; transform: scale(1); }
         }
       `}</style>
 
-      <div className="fixed inset-0 z-[300] flex flex-col" style={{ background: "linear-gradient(180deg, #0a0a1a 0%, #0d0d20 50%, #0a0a18 100%)" }}>
-        
+      <div
+        className="fixed inset-0 z-[300] flex flex-col"
+        style={{ background: "linear-gradient(180deg, #080812 0%, #0d0d1f 50%, #08080f 100%)" }}
+      >
         {phase === "spin" && (
           <div className="flex flex-col h-full">
             <div className="flex items-center justify-between px-4 pt-5 pb-4">
-              <button onClick={onClose} className="flex items-center gap-1.5 text-white/50 hover:text-white/80 transition-colors">
+              <button
+                onClick={onClose}
+                className="flex items-center gap-1.5 text-white/50 hover:text-white/80 transition-colors"
+              >
                 <Icon name="ChevronLeft" size={18} />
                 <span className="text-sm">Другие кейсы</span>
               </button>
@@ -307,27 +417,27 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
               <div className="w-20" />
             </div>
 
-            <div className="flex-1 flex flex-col items-center justify-center px-4 gap-6">
+            <div className="flex-1 flex flex-col items-center justify-center px-4 gap-8">
               <div className="w-full relative">
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 -top-3 z-30"
-                  style={{ filter: "drop-shadow(0 0 8px #4ade80)" }}
+                  className="absolute left-1/2 -translate-x-1/2 -top-4 z-30"
+                  style={{ filter: "drop-shadow(0 0 10px #4ade80)" }}
                 >
-                  <div className="w-0 h-0 border-l-[12px] border-r-[12px] border-t-[18px] border-l-transparent border-r-transparent border-t-[#4ade80]" />
+                  <div className="w-0 h-0 border-l-[14px] border-r-[14px] border-t-[20px] border-l-transparent border-r-transparent border-t-[#4ade80]" />
                 </div>
                 <div
-                  className="absolute left-1/2 -translate-x-1/2 -bottom-3 z-30"
-                  style={{ filter: "drop-shadow(0 0 8px #4ade80)" }}
+                  className="absolute left-1/2 -translate-x-1/2 -bottom-4 z-30"
+                  style={{ filter: "drop-shadow(0 0 10px #4ade80)" }}
                 >
-                  <div className="w-0 h-0 border-l-[12px] border-r-[12px] border-b-[18px] border-l-transparent border-r-transparent border-b-[#4ade80]" />
+                  <div className="w-0 h-0 border-l-[14px] border-r-[14px] border-b-[20px] border-l-transparent border-r-transparent border-b-[#4ade80]" />
                 </div>
 
                 <div
                   className="absolute left-1/2 -translate-x-1/2 top-0 bottom-0 w-[2px] z-20 rounded-full"
                   style={{
-                    background: "linear-gradient(180deg, transparent, #4ade80, transparent)",
-                    animation: spinning ? "spinnerGlow 0.8s ease-in-out infinite" : "none",
-                    boxShadow: "0 0 12px rgba(74,222,128,0.6)",
+                    background: "linear-gradient(180deg, transparent, #4ade80 30%, #4ade80 70%, transparent)",
+                    animation: spinning ? "spinnerGlow 0.7s ease-in-out infinite" : "none",
+                    boxShadow: "0 0 14px rgba(74,222,128,0.8)",
                   }}
                 />
 
@@ -335,9 +445,11 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
                   className="overflow-hidden rounded-2xl"
                   ref={containerRef}
                   style={{
-                    background: "linear-gradient(180deg, rgba(255,255,255,0.03) 0%, rgba(255,255,255,0.06) 50%, rgba(255,255,255,0.03) 100%)",
-                    border: "1px solid rgba(255,255,255,0.08)",
-                    boxShadow: spinning ? "0 0 40px rgba(74,222,128,0.15), inset 0 0 30px rgba(0,0,0,0.4)" : "inset 0 0 30px rgba(0,0,0,0.4)",
+                    background: "rgba(255,255,255,0.04)",
+                    border: "1px solid rgba(255,255,255,0.1)",
+                    boxShadow: spinning
+                      ? "0 0 50px rgba(74,222,128,0.2), inset 0 0 40px rgba(0,0,0,0.5)"
+                      : "inset 0 0 40px rgba(0,0,0,0.5)",
                   }}
                 >
                   <div className="py-3 px-2">
@@ -346,47 +458,44 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
                       style={{ transform: `translateX(-${offset}px)`, willChange: "transform" }}
                     >
                       {coins.map((coin, i) => {
-                        const rc = RARITY_COLORS[coin.rarity];
                         const isWin = finished && i === winIndexRef.current;
                         return (
-                          <div
+                          <CoinVisual
                             key={i}
-                            className="flex-shrink-0 flex flex-col items-center justify-center rounded-full relative"
-                            style={{
-                              width: COIN_SIZE,
-                              height: COIN_SIZE,
-                              background: `radial-gradient(circle at 35% 35%, ${rc.border}33, transparent 70%)`,
-                              border: `2px solid ${isWin ? rc.border : rc.border + "55"}`,
-                              boxShadow: isWin ? `0 0 24px ${rc.glow}, 0 0 48px ${rc.glow}55` : `0 0 8px ${rc.glow}33`,
-                              animation: isWin ? "coinPulse 0.8s ease-in-out infinite" : "none",
-                              transition: "all 0.3s ease",
-                            }}
-                          >
-                            <img src={COIN_IMG} alt="coin" className="w-full h-full rounded-full object-cover opacity-70" draggable={false} />
-                            <div className="absolute inset-0 rounded-full" style={{ background: `radial-gradient(circle at 35% 30%, rgba(255,255,255,0.25), transparent 60%)` }} />
-                            <div className="absolute inset-0 flex flex-col items-center justify-center">
-                              <span className="text-white font-extrabold leading-none" style={{ fontSize: coin.value >= 100 ? 13 : 16, textShadow: `0 0 10px ${rc.glow}, 0 2px 4px rgba(0,0,0,0.9)` }}>
-                                {coin.label}
-                              </span>
-                            </div>
-                          </div>
+                            rarity={coin.rarity}
+                            value={coin.value}
+                            symbol={currencySymbol}
+                            size={COIN_SIZE}
+                            isWin={isWin}
+                            spinning={spinning}
+                          />
                         );
                       })}
                     </div>
                   </div>
                 </div>
 
-                <div className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none rounded-l-2xl" style={{ background: "linear-gradient(90deg, #0a0a1a, transparent)" }} />
-                <div className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none rounded-r-2xl" style={{ background: "linear-gradient(270deg, #0a0a1a, transparent)" }} />
+                <div
+                  className="absolute left-0 top-0 bottom-0 w-20 z-10 pointer-events-none rounded-l-2xl"
+                  style={{ background: "linear-gradient(90deg, #080812, transparent)" }}
+                />
+                <div
+                  className="absolute right-0 top-0 bottom-0 w-20 z-10 pointer-events-none rounded-r-2xl"
+                  style={{ background: "linear-gradient(270deg, #080812, transparent)" }}
+                />
               </div>
 
               {spinning && (
-                <div className="flex gap-1">
-                  {[0, 1, 2].map((i) => (
+                <div className="flex gap-2 items-end h-6">
+                  {[0, 1, 2, 3, 4].map((i) => (
                     <div
                       key={i}
-                      className="w-2 h-2 rounded-full bg-[#4ade80]"
-                      style={{ animation: `floatUp 1.2s ease-in-out infinite`, animationDelay: `${i * 0.2}s` }}
+                      className="w-2 h-2 rounded-full"
+                      style={{
+                        background: `hsl(${120 + i * 30}, 80%, 60%)`,
+                        animation: `floatDot 1s ease-in-out infinite`,
+                        animationDelay: `${i * 0.15}s`,
+                      }}
                     />
                   ))}
                 </div>
@@ -410,9 +519,9 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
                 onClick={onClose}
                 disabled={spinning}
                 className="w-full py-4 rounded-2xl text-white/60 text-sm font-medium transition-all"
-                style={{ background: "rgba(255,255,255,0.05)", border: "1px solid rgba(255,255,255,0.08)" }}
+                style={{ background: "rgba(255,255,255,0.06)", border: "1px solid rgba(255,255,255,0.1)" }}
               >
-                {spinning ? "Открываем..." : "Закрыть"}
+                {spinning ? "Крутим..." : "Закрыть"}
               </button>
             </div>
           </div>
@@ -420,17 +529,21 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
 
         {phase === "result" && winCoin && winRarityData && showResult && (
           <div className="relative flex flex-col h-full items-center overflow-hidden">
-            <Confetti active={confettiActive} />
+            <Confetti active={confettiActive} rarity={winCoin.rarity} />
 
             <div
               className="absolute inset-0 pointer-events-none"
               style={{
-                background: `radial-gradient(ellipse at 50% 40%, ${winRarityData.glow}22 0%, transparent 70%)`,
+                background: `radial-gradient(ellipse at 50% 35%, ${winRarityData.glow}30 0%, transparent 65%)`,
+                animation: "glowPulse 2s ease-in-out infinite",
               }}
             />
 
             <div className="flex items-center justify-between w-full px-4 pt-5 pb-2">
-              <button onClick={onClose} className="flex items-center gap-1.5 text-white/50 hover:text-white/80 transition-colors">
+              <button
+                onClick={onClose}
+                className="flex items-center gap-1.5 text-white/50 hover:text-white/80 transition-colors"
+              >
                 <Icon name="ChevronLeft" size={18} />
                 <span className="text-sm">Другие кейсы</span>
               </button>
@@ -441,73 +554,62 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
               className="flex flex-col items-center flex-1 justify-center px-8 w-full"
               style={{ animation: "resultSlideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }}
             >
-              <div className="text-white/60 text-base mb-1">Поздравляем!</div>
-              <div className="text-white font-extrabold text-2xl mb-6">Вы выиграли</div>
+              <div className="text-white/50 text-sm mb-1 tracking-wide uppercase">Поздравляем!</div>
+              <div className="text-white font-extrabold text-3xl mb-8">Вы выиграли</div>
 
               <div className="relative mb-6">
-                {[...Array(8)].map((_, i) => (
-                  <div
-                    key={i}
-                    className="absolute w-3 h-3"
-                    style={{
-                      top: `${50 + 55 * Math.sin((i * Math.PI * 2) / 8)}%`,
-                      left: `${50 + 55 * Math.cos((i * Math.PI * 2) / 8)}%`,
-                      transform: "translate(-50%, -50%)",
-                      animation: `starSparkle 1.5s ease-in-out infinite`,
-                      animationDelay: `${i * 0.18}s`,
-                    }}
-                  >
-                    <div className="w-full h-full" style={{ color: winRarityData.text }}>✦</div>
-                  </div>
-                ))}
+                {[...Array(winCoin.rarity === "legendary" ? 12 : winCoin.rarity === "epic" ? 10 : 8)].map((_, i) => {
+                  const total = winCoin.rarity === "legendary" ? 12 : winCoin.rarity === "epic" ? 10 : 8;
+                  const sparkleColors = winRarityData.confetti;
+                  return (
+                    <div
+                      key={i}
+                      className="absolute text-base"
+                      style={{
+                        top: `${50 + 58 * Math.sin((i * Math.PI * 2) / total)}%`,
+                        left: `${50 + 58 * Math.cos((i * Math.PI * 2) / total)}%`,
+                        transform: "translate(-50%, -50%)",
+                        animation: `starSparkle 1.8s ease-in-out infinite`,
+                        animationDelay: `${i * 0.15}s`,
+                        color: sparkleColors[i % sparkleColors.length],
+                        filter: `drop-shadow(0 0 4px ${sparkleColors[i % sparkleColors.length]})`,
+                      }}
+                    >
+                      {winCoin.rarity === "legendary" ? "★" : "✦"}
+                    </div>
+                  );
+                })}
 
-                <div
-                  className="w-48 h-48 rounded-full flex flex-col items-center justify-center relative overflow-hidden"
-                  style={{
-                    background: `radial-gradient(circle at 35% 30%, ${winRarityData.border}99, ${winRarityData.border}22)`,
-                    border: `3px solid ${winRarityData.border}`,
-                    boxShadow: `0 0 40px ${winRarityData.glow}, 0 0 80px ${winRarityData.glow}66, 0 0 120px ${winRarityData.glow}33`,
-                    animation: "bigCoinAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards",
-                  }}
-                >
-                  <div className="absolute inset-0" style={{ background: "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.3), transparent 60%)" }} />
-                  <div className="absolute inset-1 rounded-full" style={{ border: `1px solid ${winRarityData.border}55` }} />
-
-                  <span
-                    className="font-extrabold relative z-10"
-                    style={{
-                      fontSize: winCoin.value >= 1000 ? 28 : winCoin.value >= 100 ? 34 : 40,
-                      color: "#fff",
-                      textShadow: `0 0 20px ${winRarityData.glow}, 0 2px 8px rgba(0,0,0,0.8)`,
-                    }}
-                  >
-                    {winCoin.value}
-                  </span>
-                  <span className="font-bold text-xl relative z-10" style={{ color: winRarityData.text, textShadow: `0 0 10px ${winRarityData.glow}` }}>
-                    {currencySymbol}
-                  </span>
-                </div>
+                <CoinVisual
+                  rarity={winCoin.rarity}
+                  value={winCoin.value}
+                  symbol={currencySymbol}
+                  size={192}
+                />
               </div>
 
               <div
-                className="px-4 py-1.5 rounded-full text-sm font-bold mb-8"
+                className="px-5 py-1.5 rounded-full text-sm font-bold mb-8"
                 style={{
-                  background: `${winRarityData.border}22`,
-                  border: `1px solid ${winRarityData.border}66`,
+                  background: `${winRarityData.border}25`,
+                  border: `1px solid ${winRarityData.border}77`,
                   color: winRarityData.text,
+                  animation: "rarityBadgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both",
+                  boxShadow: `0 0 16px ${winRarityData.glow}44`,
                 }}
               >
                 {rarityLabel[winCoin.rarity]}
               </div>
 
-              <div className="flex flex-col gap-3 w-full px-0">
+              <div className="flex flex-col gap-3 w-full">
                 <button
                   onClick={handleOpenAgain}
                   className="w-full py-4 rounded-2xl font-bold text-base transition-all active:scale-[0.97]"
                   style={{
-                    background: `linear-gradient(135deg, ${winRarityData.border}, ${winRarityData.border}88)`,
-                    color: winCoin.rarity === "legendary" ? "#000" : "#fff",
-                    boxShadow: `0 4px 20px ${winRarityData.glow}66`,
+                    background: `linear-gradient(135deg, ${winRarityData.bg1}, ${winRarityData.bg2})`,
+                    color: winCoin.rarity === "legendary" ? "#1a0a00" : "#fff",
+                    boxShadow: `0 4px 24px ${winRarityData.glow}77`,
+                    border: `1px solid ${winRarityData.border}55`,
                   }}
                 >
                   Открыть ещё раз за {caseValue}{currencySymbol}
@@ -518,7 +620,7 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
                   className="w-full py-4 rounded-2xl font-semibold text-sm text-white/70 transition-all active:scale-[0.97]"
                   style={{ background: "rgba(255,255,255,0.07)", border: "1px solid rgba(255,255,255,0.1)" }}
                 >
-                  Забрать
+                  Забрать и выйти
                 </button>
               </div>
             </div>
