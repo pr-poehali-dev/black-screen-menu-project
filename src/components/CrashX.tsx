@@ -7,7 +7,7 @@ const MIN_BET_STARS = 5;
 const QUICK_BETS_USDT = [1, 5, 10, 50];
 const QUICK_BETS_STARS = [5, 25, 50, 100];
 const ROUND_WAIT = 5000;
-const JETPACK_GUY = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/dd353e14-25fa-4b18-9651-4e5f9d732b31.jpg";
+const JETPACK_GUY = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/1ce6aec3-e041-4558-bb54-67ead259b94b.jpg";
 
 type Cur = "usdt" | "stars";
 type Phase = "loading" | "roundWait" | "flying" | "crashed" | "cashedOut";
@@ -353,7 +353,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           </>
         )}
         {!isCrashedOrAway && (
-          <image href={JETPACK_GUY} x={px - 24} y={py - 40} width="48" height="48" style={{ filter: "drop-shadow(0 0 8px rgba(124,58,237,0.6))" }} />
+          <image href={JETPACK_GUY} x={px - 24} y={py - 40} width="48" height="48" style={{ filter: "drop-shadow(0 0 8px rgba(124,58,237,0.6))", mixBlendMode: "screen" }} />
         )}
       </svg>
     );
@@ -363,7 +363,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     return (
       <div className="fixed inset-0 z-[200] bg-[#13112a] flex flex-col items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <img src={JETPACK_GUY} alt="Lucky Jet" className="w-20 h-20 object-contain animate-bounce" />
+          <img src={JETPACK_GUY} alt="Lucky Jet" className="w-20 h-20 object-contain animate-bounce mix-blend-screen" />
           <span className="text-purple-400 font-extrabold text-2xl tracking-widest">LUCKY JET</span>
           <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-[#7c3aed] to-[#c026d3] rounded-full transition-all" style={{ width: `${Math.min(loadProg, 100)}%` }} />
@@ -425,7 +425,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
         {isWaiting && (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-            <img src={JETPACK_GUY} alt="Lucky Jet" className="w-16 h-16 object-contain mb-3 animate-bounce" />
+            <img src={JETPACK_GUY} alt="Lucky Jet" className="w-16 h-16 object-contain mb-3 animate-bounce mix-blend-screen" />
             <span className="text-white font-extrabold text-sm tracking-wider uppercase">Ожидание раунда</span>
             <div className="w-40 h-1.5 bg-white/10 rounded-full mt-3 overflow-hidden">
               <div className="h-full bg-gradient-to-r from-[#7c3aed] to-[#c026d3] rounded-full transition-all duration-100" style={{ width: `${roundProgress}%` }} />
