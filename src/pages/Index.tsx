@@ -1438,18 +1438,20 @@ const Index = () => {
 
             {(() => {
               const sym = currency === "usdt" ? "$" : "★";
+              const caseMin = (val: number) => Math.round(val * 0.1);
+              const caseMax = (val: number) => Math.round(val * 12);
               const cases = [
-                { val: 10,  name: "Старт",      rarity: "common",    min: 1,   max: 25,   color: "#888", glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30", border: "rgba(120,120,120,0.25)" },
-                { val: 15,  name: "Новичок",    rarity: "common",    min: 1,   max: 30,   color: "#888", glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30", border: "rgba(120,120,120,0.25)" },
-                { val: 20,  name: "Везунчик",   rarity: "rare",      min: 3,   max: 50,   color: "#3b82f6", glow: "rgba(59,130,246,0.6)", gradient: "from-blue-600/25 to-blue-900/25", border: "rgba(59,130,246,0.3)" },
-                { val: 25,  name: "Удача",      rarity: "rare",      min: 5,   max: 75,   color: "#3b82f6", glow: "rgba(59,130,246,0.6)", gradient: "from-blue-600/25 to-blue-900/25", border: "rgba(59,130,246,0.3)" },
-                { val: 50,  name: "Форсаж",     rarity: "rare",      min: 10,  max: 150,  color: "#3b82f6", glow: "rgba(59,130,246,0.6)", gradient: "from-blue-600/25 to-blue-900/25", border: "rgba(59,130,246,0.3)" },
-                { val: 100, name: "Элита",      rarity: "epic",      min: 20,  max: 300,  color: "#a855f7", glow: "rgba(168,85,247,0.7)", gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)" },
-                { val: 260, name: "Премиум",    rarity: "epic",      min: 50,  max: 750,  color: "#a855f7", glow: "rgba(168,85,247,0.7)", gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)" },
-                { val: 500, name: "Олигарх",    rarity: "legendary", min: 100, max: 1500, color: "#fbbf24", glow: "rgba(251,191,36,0.8)", gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)" },
-                { val: 670, name: "Магнат",     rarity: "legendary", min: 150, max: 2000, color: "#fbbf24", glow: "rgba(251,191,36,0.8)", gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)" },
-                { val: 999, name: "Хозяин",     rarity: "legendary", min: 200, max: 3000, color: "#fbbf24", glow: "rgba(251,191,36,0.8)", gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)" },
-              ];
+                { val: 10,  name: "Старт",      rarity: "common",    color: "#888", glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30", border: "rgba(120,120,120,0.25)" },
+                { val: 15,  name: "Новичок",    rarity: "common",    color: "#888", glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30", border: "rgba(120,120,120,0.25)" },
+                { val: 20,  name: "Везунчик",   rarity: "rare",      color: "#3b82f6", glow: "rgba(59,130,246,0.6)", gradient: "from-blue-600/25 to-blue-900/25", border: "rgba(59,130,246,0.3)" },
+                { val: 25,  name: "Удача",      rarity: "rare",      color: "#3b82f6", glow: "rgba(59,130,246,0.6)", gradient: "from-blue-600/25 to-blue-900/25", border: "rgba(59,130,246,0.3)" },
+                { val: 50,  name: "Форсаж",     rarity: "rare",      color: "#3b82f6", glow: "rgba(59,130,246,0.6)", gradient: "from-blue-600/25 to-blue-900/25", border: "rgba(59,130,246,0.3)" },
+                { val: 100, name: "Элита",      rarity: "epic",      color: "#a855f7", glow: "rgba(168,85,247,0.7)", gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)" },
+                { val: 260, name: "Премиум",    rarity: "epic",      color: "#a855f7", glow: "rgba(168,85,247,0.7)", gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)" },
+                { val: 500, name: "Олигарх",    rarity: "legendary", color: "#fbbf24", glow: "rgba(251,191,36,0.8)", gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)" },
+                { val: 670, name: "Магнат",     rarity: "legendary", color: "#fbbf24", glow: "rgba(251,191,36,0.8)", gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)" },
+                { val: 999, name: "Хозяин",     rarity: "legendary", color: "#fbbf24", glow: "rgba(251,191,36,0.8)", gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)" },
+              ].map(c => ({ ...c, min: caseMin(c.val), max: caseMax(c.val) }));
               const rarityLabel: Record<string, string> = { common: "Обычный", rare: "Редкий", epic: "Эпический", legendary: "Легендарный" };
               return (
                 <div className="grid grid-cols-2 gap-3">
@@ -1554,18 +1556,20 @@ const Index = () => {
 
       {caseDetailOpen !== null && (() => {
         const sym = currency === "usdt" ? "$" : "★";
+        const caseMin = (val: number) => Math.round(val * 0.1);
+        const caseMax = (val: number) => Math.round(val * 12);
         const cases = [
-          { val: 10,  name: "Старт",   rarity: "common",    min: 1,   max: 25,   color: "#888",    glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30",     border: "rgba(120,120,120,0.25)", desc: "Идеально для начала. Небольшие призы, много удачи нужно!" },
-          { val: 15,  name: "Новичок", rarity: "common",    min: 1,   max: 30,   color: "#888",    glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30",     border: "rgba(120,120,120,0.25)", desc: "Первые шаги в мире кейсов. Чаще всего везёт новичкам!" },
-          { val: 20,  name: "Везунчик",rarity: "rare",      min: 3,   max: 50,   color: "#3b82f6", glow: "rgba(59,130,246,0.6)",  gradient: "from-blue-600/25 to-blue-900/25",     border: "rgba(59,130,246,0.3)",  desc: "Редкий кейс с приятными сюрпризами внутри." },
-          { val: 25,  name: "Удача",   rarity: "rare",      min: 5,   max: 75,   color: "#3b82f6", glow: "rgba(59,130,246,0.6)",  gradient: "from-blue-600/25 to-blue-900/25",     border: "rgba(59,130,246,0.3)",  desc: "Верите в удачу? Этот кейс специально для вас." },
-          { val: 50,  name: "Форсаж", rarity: "rare",      min: 10,  max: 150,  color: "#3b82f6", glow: "rgba(59,130,246,0.6)",  gradient: "from-blue-600/25 to-blue-900/25",     border: "rgba(59,130,246,0.3)",  desc: "Ускоряй выигрыш! Солидные призы ждут смелых." },
-          { val: 100, name: "Элита",  rarity: "epic",      min: 20,  max: 300,  color: "#a855f7", glow: "rgba(168,85,247,0.7)",  gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)", desc: "Для избранных. Крупные выигрыши почти гарантированы." },
-          { val: 260, name: "Премиум",rarity: "epic",      min: 50,  max: 750,  color: "#a855f7", glow: "rgba(168,85,247,0.7)",  gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)", desc: "Премиальный опыт. Призы на уровне выше среднего." },
-          { val: 500, name: "Олигарх",rarity: "legendary", min: 100, max: 1500, color: "#fbbf24", glow: "rgba(251,191,36,0.8)",  gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)",  desc: "Только для серьёзных игроков. Призы меняют жизнь." },
-          { val: 670, name: "Магнат", rarity: "legendary", min: 150, max: 2000, color: "#fbbf24", glow: "rgba(251,191,36,0.8)",  gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)",  desc: "Статус магната открывает огромные призы." },
-          { val: 999, name: "Хозяин", rarity: "legendary", min: 200, max: 3000, color: "#fbbf24", glow: "rgba(251,191,36,0.8)",  gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)",  desc: "Вершина. Максимальные призы, максимальный адреналин!" },
-        ];
+          { val: 10,  name: "Старт",   rarity: "common",    color: "#888",    glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30",     border: "rgba(120,120,120,0.25)", desc: "Идеально для начала. Небольшие призы, много удачи нужно!" },
+          { val: 15,  name: "Новичок", rarity: "common",    color: "#888",    glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30",     border: "rgba(120,120,120,0.25)", desc: "Первые шаги в мире кейсов. Чаще всего везёт новичкам!" },
+          { val: 20,  name: "Везунчик",rarity: "rare",      color: "#3b82f6", glow: "rgba(59,130,246,0.6)",  gradient: "from-blue-600/25 to-blue-900/25",     border: "rgba(59,130,246,0.3)",  desc: "Редкий кейс с приятными сюрпризами внутри." },
+          { val: 25,  name: "Удача",   rarity: "rare",      color: "#3b82f6", glow: "rgba(59,130,246,0.6)",  gradient: "from-blue-600/25 to-blue-900/25",     border: "rgba(59,130,246,0.3)",  desc: "Верите в удачу? Этот кейс специально для вас." },
+          { val: 50,  name: "Форсаж", rarity: "rare",      color: "#3b82f6", glow: "rgba(59,130,246,0.6)",  gradient: "from-blue-600/25 to-blue-900/25",     border: "rgba(59,130,246,0.3)",  desc: "Ускоряй выигрыш! Солидные призы ждут смелых." },
+          { val: 100, name: "Элита",  rarity: "epic",      color: "#a855f7", glow: "rgba(168,85,247,0.7)",  gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)", desc: "Для избранных. Крупные выигрыши почти гарантированы." },
+          { val: 260, name: "Премиум",rarity: "epic",      color: "#a855f7", glow: "rgba(168,85,247,0.7)",  gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)", desc: "Премиальный опыт. Призы на уровне выше среднего." },
+          { val: 500, name: "Олигарх",rarity: "legendary", color: "#fbbf24", glow: "rgba(251,191,36,0.8)",  gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)",  desc: "Только для серьёзных игроков. Призы меняют жизнь." },
+          { val: 670, name: "Магнат", rarity: "legendary", color: "#fbbf24", glow: "rgba(251,191,36,0.8)",  gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)",  desc: "Статус магната открывает огромные призы." },
+          { val: 999, name: "Хозяин", rarity: "legendary", color: "#fbbf24", glow: "rgba(251,191,36,0.8)",  gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)",  desc: "Вершина. Максимальные призы, максимальный адреналин!" },
+        ].map(c => ({ ...c, min: caseMin(c.val), max: caseMax(c.val) }));
         const rarityLabel: Record<string, string> = { common: "Обычный", rare: "Редкий", epic: "Эпический", legendary: "Легендарный" };
         const c = cases.find(x => x.val === caseDetailOpen)!;
         const previewPrizes = [
