@@ -1337,7 +1337,7 @@ const Index = () => {
               >
                 <div className="relative aspect-square overflow-hidden">
                   <img
-                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/4ed7f6dd-74b5-4080-881c-9f8ea7f836cb.jpg"
+                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/f16f38a7-4c04-4793-9f40-019ef84eae86.jpg"
                     alt="Jaguar Gems"
                     className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                   />
