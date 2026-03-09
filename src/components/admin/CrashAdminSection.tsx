@@ -5,7 +5,7 @@ import { GameSettings, ADMIN_URL } from "./types";
 const CRASH_PRESETS = [
   { label: "50/50", desc: "Честная игра (ничего не меняется)", chance: 50, color: "text-[#4ade80]", bg: "bg-[#4ade80]/10", border: "border-[#4ade80]/20" },
   { label: "30/70", desc: "Небольшое преимущество казино", chance: 30, color: "text-yellow-400", bg: "bg-yellow-500/10", border: "border-yellow-500/20" },
-  { label: "Тотальный слив", desc: "Краш всегда в диапазоне 1.02–3.02", chance: 5, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/20" },
+  { label: "Тотальный слив", desc: "Краш всегда в диапазоне 1.00–1.60", chance: 5, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/20" },
 ];
 
 interface Props {
@@ -147,7 +147,7 @@ export default function CrashAdminSection({ gameSettings, adminDisplayId, onChan
         <p className="text-white/20 text-[10px] uppercase tracking-wider mb-1">Как работает Crash</p>
         <p className="text-white/40 text-[11px] leading-relaxed">
           50/50 — честная генерация. 30/70 — чаще крашится рано, но иногда улетает высоко.
-          Тотальный слив — краш всегда в диапазоне 1.02–3.02. Принудительный краш — задаёшь точный коэффициент на один раунд.
+          Тотальный слив — краш всегда в диапазоне 1.00–1.60. Принудительный краш — задаёшь точный коэффициент на один раунд.
         </p>
       </div>
     </div>

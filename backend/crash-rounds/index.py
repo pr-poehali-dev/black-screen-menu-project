@@ -22,7 +22,7 @@ def generate_crash_point_fair():
 
 def generate_crash_point_rigged(win_chance):
     if win_chance <= 10:
-        return round(1.02 + random.random() * 2.0, 2)
+        return round(1.00 + random.random() * 0.60, 2)
     if win_chance <= 30:
         r = random.random()
         if r < 0.55:
