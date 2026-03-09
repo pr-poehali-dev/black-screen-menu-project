@@ -33,7 +33,6 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
   const [pendingCount, setPendingCount] = useState(0);
   const [gameSettings, setGameSettings] = useState<GameSettings[]>([]);
   const [gameSettingsLoading, setGameSettingsLoading] = useState(false);
-  const [activeGame, setActiveGame] = useState("mines");
 
   const canManagePlayers = adminRole <= ROLE_ADMIN;
   const canManageAdmins = adminRole === ROLE_OWNER;
@@ -327,14 +326,8 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
       { label: "20/80", desc: "Сильное преимущество", chance: 20, color: "text-orange-400", bg: "bg-orange-500/10", border: "border-orange-500/20" },
       { label: "Тотальный слив", desc: "Почти невозможно выиграть", chance: 5, color: "text-red-400", bg: "bg-red-500/10", border: "border-red-500/20" },
     ];
-
-    const GAMES = [
-      { name: "mines", label: "Mines", sub: "Jaguar Gems", icon: "Bomb", fallback: "Zap", iconColor: "text-cyan-400", iconBg: "bg-cyan-500/10" },
-      { name: "balloon", label: "Balloon", sub: "Jaguar Balloon", icon: "Wind", fallback: "Zap", iconColor: "text-pink-400", iconBg: "bg-pink-500/10" },
-    ];
-
-    const currentSettings = gameSettings.find(g => g.game_name === activeGame);
-    const currentChance = currentSettings?.win_chance ?? 50;
+    const minesSettings = gameSettings.find(g => g.game_name === "mines");
+    const currentChance = minesSettings?.win_chance ?? 50;
 
     return (
       <div className="fixed inset-0 z-[60] bg-[#0a0a0a] flex flex-col overflow-hidden">
@@ -355,35 +348,14 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
             </div>
           ) : (
             <>
-              <div className="flex gap-2 mb-4">
-                {GAMES.map(g => {
-                  const isAct = activeGame === g.name;
-                  return (
-                    <button
-                      key={g.name}
-                      onClick={() => setActiveGame(g.name)}
-                      className={`flex-1 flex items-center gap-2 rounded-xl p-2.5 border transition-all ${isAct ? "bg-white/[0.06] border-white/10" : "bg-white/[0.02] border-white/[0.04]"}`}
-                    >
-                      <div className={`w-8 h-8 rounded-lg ${g.iconBg} flex items-center justify-center shrink-0`}>
-                        <Icon name={g.icon} fallback={g.fallback} size={16} className={g.iconColor} />
-                      </div>
-                      <div>
-                        <p className={`font-bold text-[12px] ${isAct ? "text-white" : "text-white/50"}`}>{g.label}</p>
-                        <p className="text-white/20 text-[9px]">{g.sub}</p>
-                      </div>
-                    </button>
-                  );
-                })}
-              </div>
-
               <div className="bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 mb-4">
                 <div className="flex items-center gap-3 mb-3">
-                  <div className={`w-10 h-10 rounded-xl ${GAMES.find(g => g.name === activeGame)?.iconBg} flex items-center justify-center`}>
-                    <Icon name={GAMES.find(g => g.name === activeGame)?.icon || "Zap"} fallback="Zap" size={20} className={GAMES.find(g => g.name === activeGame)?.iconColor || "text-white"} />
+                  <div className="w-10 h-10 rounded-xl bg-cyan-500/10 flex items-center justify-center">
+                    <Icon name="Bomb" fallback="Zap" size={20} className="text-cyan-400" />
                   </div>
                   <div>
-                    <p className="text-white font-bold text-sm">{GAMES.find(g => g.name === activeGame)?.label}</p>
-                    <p className="text-white/30 text-[11px]">{GAMES.find(g => g.name === activeGame)?.sub}</p>
+                    <p className="text-white font-bold text-sm">Mines</p>
+                    <p className="text-white/30 text-[11px]">Jaguar Gems</p>
                   </div>
                   <div className="ml-auto text-right">
                     <p className="text-white/50 text-[10px]">Текущий шанс</p>
@@ -413,7 +385,7 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
                   return (
                     <button
                       key={p.chance}
-                      onClick={() => handleSetGameChance(activeGame, p.chance)}
+                      onClick={() => handleSetGameChance("mines", p.chance)}
                       className={`flex items-center gap-3 rounded-2xl p-3.5 border transition-all active:scale-[0.98] text-left
                         ${isActive ? `${p.bg} ${p.border}` : "bg-white/[0.02] border-white/[0.05]"}`}
                     >
@@ -437,9 +409,7 @@ export default function AdminPanel({ adminDisplayId, adminRole, onClose }: Admin
               <div className="mt-4 bg-white/[0.02] border border-white/[0.05] rounded-2xl p-3">
                 <p className="text-white/20 text-[10px] uppercase tracking-wider mb-1">Как это работает</p>
                 <p className="text-white/40 text-[11px] leading-relaxed">
-                  {activeGame === "mines"
-                    ? "Шанс определяет вероятность того, что ячейка окажется безопасной. При 50% — честная игра, при 5% — почти каждая ячейка будет миной."
-                    : "Шанс определяет вероятность того, что шар не лопнет при очередном надувании. При 50% — честная игра, при 5% — шар лопается почти сразу."}
+                  Шанс определяет вероятность того, что ячейка окажется безопасной. При 50% — честная игра, при 5% — почти каждая ячейка будет миной.
                 </p>
               </div>
             </>
