@@ -108,7 +108,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
     nc[i] = "gem";
     setCells(nc);
     const safe = [...nr].filter(r => !bombs.has(r)).length;
-    const newMult = 1 + safe * MULT_STEP;
+    const newMult = 1 + MULT_STEP * safe * (safe + 1) / 2;
     setMult(newMult);
     if (safe >= CELLS - mines) {
       const winnings = bet * newMult;
@@ -136,7 +136,9 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
 
   const safe = [...revealed].filter(r => !bombs.has(r)).length;
   const winAmount = bet * mult;
-  const maxWin = (phase === "playing" || phase === "won" || phase === "lost" ? bet : betVal) * (1 + (CELLS - mines) * MULT_STEP);
+  const maxSafe = CELLS - mines;
+  const maxMult = 1 + MULT_STEP * maxSafe * (maxSafe + 1) / 2;
+  const maxWin = (phase === "playing" || phase === "won" || phase === "lost" ? bet : betVal) * maxMult;
 
   if (phase === "loading") {
     return (
