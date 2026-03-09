@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import JaguarGems from "@/components/JaguarGems";
 
 const copyId = (id: string | number) => {
   navigator.clipboard.writeText(String(id));
@@ -116,6 +117,7 @@ const Index = () => {
   const [starsWithdrawError, setStarsWithdrawError] = useState("");
   const [starsWithdrawLoading, setStarsWithdrawLoading] = useState(false);
   const [starsWithdrawSuccess, setStarsWithdrawSuccess] = useState(false);
+  const [gameOpen, setGameOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -1326,9 +1328,27 @@ const Index = () => {
         )}
 
         {active === 2 && (
-          <div className="flex flex-col items-center justify-center py-16 px-6">
-            <Icon name="Clover" size={48} className="text-[#4ade80]/30 mb-4" />
-            <span className="text-white/40 text-sm">Казино — скоро</span>
+          <div className="px-4 py-4">
+            <p className="text-white/40 text-xs font-medium uppercase tracking-wider mb-3">Игры</p>
+            <div className="grid grid-cols-2 gap-3">
+              <button
+                onClick={() => setGameOpen(true)}
+                className="group flex flex-col bg-[#111820] border border-white/5 rounded-2xl overflow-hidden active:scale-[0.97] transition-transform"
+              >
+                <div className="relative aspect-square overflow-hidden">
+                  <img
+                    src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/4ed7f6dd-74b5-4080-881c-9f8ea7f836cb.jpg"
+                    alt="Jaguar Gems"
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
+                  <div className="absolute bottom-2 left-2 right-2">
+                    <span className="text-white font-bold text-sm drop-shadow-lg">Jaguar Gems</span>
+                    <p className="text-white/60 text-[10px]">Mines</p>
+                  </div>
+                </div>
+              </button>
+            </div>
           </div>
         )}
 
@@ -1377,6 +1397,17 @@ const Index = () => {
           ))}
         </div>
       </nav>
+
+      {gameOpen && (
+        <JaguarGems
+          onClose={() => setGameOpen(false)}
+          balance={currency === "usdt" ? userBalance : starsBalance}
+          onBalanceChange={(delta) => {
+            if (currency === "usdt") setUserBalance(prev => +(prev + delta).toFixed(2));
+            else setStarsBalance(prev => +(prev + delta).toFixed(2));
+          }}
+        />
+      )}
     </div>
   );
 };
