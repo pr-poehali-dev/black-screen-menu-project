@@ -1,8 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 
-const GRID = 5;
-const CELLS = GRID * GRID;
+const CELLS = 25;
 const MAX_MINES = 7;
 const MIN_BET = 0.5;
 const MULT_STEP = 0.5;
@@ -63,7 +62,6 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
     const nr = new Set(revealed); nr.add(i);
     setRevealed(nr);
     const nc = [...cells];
-
     if (bombs.has(i)) {
       nc[i] = "bomb";
       bombs.forEach(b => { nc[b] = "bomb"; });
@@ -72,13 +70,11 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
       setPhase("lost");
       return;
     }
-
     nc[i] = "gem";
     setCells(nc);
     const safe = [...nr].filter(r => !bombs.has(r)).length;
     const newMult = 1 + safe * MULT_STEP;
     setMult(newMult);
-
     if (safe >= CELLS - mines) {
       onBalanceChange(cur, bet * newMult);
       bombs.forEach(b => { nc[b] = "bomb"; });
@@ -100,51 +96,56 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
 
   const safe = [...revealed].filter(r => !bombs.has(r)).length;
   const winAmount = bet * mult;
+  const maxWin = (phase === "playing" || phase === "won" || phase === "lost" ? bet : betVal) * (1 + (CELLS - mines) * MULT_STEP);
 
   if (phase === "loading") {
     return (
-      <div className="fixed inset-0 z-[200] bg-[#080b10] flex flex-col items-center justify-center">
-        <button onClick={onClose} className="absolute top-3 right-3 p-2 text-white/30">
-          <Icon name="X" size={18} />
+      <div className="fixed inset-0 z-[200] bg-[#0a0e14] flex flex-col items-center justify-center">
+        <button onClick={onClose} className="absolute top-4 right-4 z-10 w-10 h-10 rounded-full bg-white/5 flex items-center justify-center">
+          <Icon name="X" size={20} className="text-white/60" />
         </button>
-        <span className="text-3xl mb-4">💎</span>
-        <p className="text-[#4ade80] text-lg font-bold mb-6">Jaguar Gems</p>
-        <div className="w-48 h-1 bg-white/10 rounded-full overflow-hidden">
-          <div className="h-full bg-[#4ade80] rounded-full transition-all" style={{ width: `${Math.min(loadProg, 100)}%` }} />
+        <div className="flex flex-col items-center gap-5">
+          <div className="relative">
+            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-[#4ade80] to-[#22c55e] flex items-center justify-center shadow-lg shadow-[#4ade80]/20">
+              <span className="text-4xl">💎</span>
+            </div>
+            <div className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-[#4ade80] animate-ping" />
+          </div>
+          <h1 className="text-[#4ade80] text-2xl font-bold tracking-wide">Jaguar Gems</h1>
+          <div className="w-56 h-1.5 bg-white/10 rounded-full overflow-hidden mt-1">
+            <div className="h-full bg-gradient-to-r from-[#4ade80] to-[#22c55e] rounded-full transition-all duration-200" style={{ width: `${Math.min(loadProg, 100)}%` }} />
+          </div>
+          <span className="text-white/30 text-xs">{Math.min(Math.round(loadProg), 100)}%</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="fixed inset-0 z-[200] bg-[#080b10] flex flex-col">
-      <div className="flex items-center justify-between px-3 py-2.5 shrink-0">
-        <button onClick={onClose} className="p-1.5">
-          <Icon name="ArrowLeft" size={18} className="text-white/50" />
+    <div className="fixed inset-0 z-[200] bg-[#0a0e14] flex flex-col overflow-auto">
+      <div className="flex items-center justify-between px-4 py-2.5 bg-[#0d1117]/80 backdrop-blur-lg border-b border-white/5 shrink-0">
+        <button onClick={onClose} className="w-8 h-8 rounded-xl bg-white/5 flex items-center justify-center">
+          <Icon name="ArrowLeft" size={16} className="text-white/60" />
         </button>
-        <div className="flex bg-white/[0.04] rounded-full p-0.5">
+        <div className="flex bg-white/[0.04] rounded-full p-0.5 border border-white/[0.06]">
           <button
             onClick={() => { if (phase !== "playing") setCur("usdt"); }}
-            className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${cur === "usdt" ? "bg-[#4ade80] text-black" : "text-white/35"}`}
+            className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${cur === "usdt" ? "bg-[#4ade80] text-[#0a0e14]" : "text-white/40"}`}
           >USDT</button>
           <button
             onClick={() => { if (phase !== "playing") setCur("stars"); }}
-            className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${cur === "stars" ? "bg-[#4ade80] text-black" : "text-white/35"}`}
-          >Stars</button>
+            className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${cur === "stars" ? "bg-[#4ade80] text-[#0a0e14]" : "text-white/40"}`}
+          >Stars ★</button>
         </div>
-        <span className="text-white/70 text-xs font-medium">{bal.toFixed(2)} {sym}</span>
+        <div className="flex items-center gap-1 bg-white/5 rounded-xl px-2.5 py-1.5">
+          <Icon name="Wallet" size={12} className="text-[#4ade80]" />
+          <span className="text-white text-xs font-semibold">{bal.toFixed(2)} {sym}</span>
+        </div>
       </div>
 
-      {phase === "playing" && safe > 0 && (
-        <div className="mx-3 mb-2 bg-[#4ade80]/8 rounded-xl px-3 py-2 flex items-center justify-between">
-          <span className="text-[#4ade80] text-xs">x{mult.toFixed(1)}</span>
-          <span className="text-[#4ade80] font-bold text-sm">{winAmount.toFixed(2)} {sym}</span>
-        </div>
-      )}
-
-      <div className="flex-1 flex items-center justify-center px-3">
-        <div className="w-full max-w-[340px] aspect-square">
-          <div className="grid grid-cols-5 gap-[5px] w-full h-full">
+      <div className="flex-1 flex flex-col px-3 py-3 gap-2.5 max-w-md mx-auto w-full">
+        <div className="bg-[#111820] rounded-2xl p-2 border border-white/5">
+          <div className="grid grid-cols-5 gap-1">
             {Array.from({ length: CELLS }).map((_, i) => {
               const c = cells[i];
               return (
@@ -152,11 +153,11 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
                   key={i}
                   disabled={phase !== "playing" || c !== "hidden"}
                   onClick={() => reveal(i)}
-                  className={`rounded-lg flex items-center justify-center transition-all duration-150 text-lg
-                    ${c === "hidden" && phase === "playing" ? "bg-[#14202c] border border-[#1e3344]/50 active:scale-90" : ""}
-                    ${c === "hidden" && phase !== "playing" ? "bg-[#14202c]/50 border border-[#1e3344]/20" : ""}
-                    ${c === "gem" ? "bg-[#4ade80]/10 border border-[#4ade80]/20" : ""}
-                    ${c === "bomb" ? "bg-red-500/10 border border-red-500/20" : ""}
+                  className={`aspect-square rounded-lg flex items-center justify-center text-lg transition-all duration-150
+                    ${c === "hidden" && phase === "playing" ? "bg-gradient-to-br from-[#1a3a4a] to-[#143040] border border-[#2a5a6a]/30 active:scale-90 cursor-pointer" : ""}
+                    ${c === "hidden" && phase !== "playing" ? "bg-gradient-to-br from-[#1a3a4a]/50 to-[#143040]/50 border border-[#2a5a6a]/15" : ""}
+                    ${c === "gem" ? "bg-[#4ade80]/10 border border-[#4ade80]/25 scale-[0.93]" : ""}
+                    ${c === "bomb" ? "bg-red-500/10 border border-red-500/25 scale-[0.93]" : ""}
                   `}
                 >
                   {c === "gem" && "💎"}
@@ -166,49 +167,69 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
             })}
           </div>
         </div>
-      </div>
 
-      <div className="shrink-0 px-3 pb-4 pt-2 flex flex-col gap-2">
+        {phase === "playing" && safe > 0 && (
+          <div className="bg-[#4ade80]/8 border border-[#4ade80]/15 rounded-xl px-3 py-2 flex items-center justify-between">
+            <span className="text-[#4ade80]/70 text-xs">Текущий x{mult.toFixed(1)}</span>
+            <span className="text-[#4ade80] font-bold text-sm">{winAmount.toFixed(2)} {sym}</span>
+          </div>
+        )}
+
         {phase === "lost" && (
-          <div className="bg-red-500/8 rounded-xl px-3 py-2.5 flex items-center justify-between">
-            <span className="text-red-400 text-sm font-medium">Проигрыш</span>
-            <span className="text-red-400/60 text-xs">-{bet.toFixed(2)} {sym}</span>
+          <div className="bg-red-500/8 border border-red-500/15 rounded-xl px-3 py-2 flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-red-500/15 flex items-center justify-center shrink-0">
+              <span className="text-sm">💣</span>
+            </div>
+            <div>
+              <p className="text-red-400 font-semibold text-xs">Проигрыш</p>
+              <p className="text-red-400/50 text-[10px]">-{bet.toFixed(2)} {sym}</p>
+            </div>
           </div>
         )}
 
         {phase === "won" && (
-          <div className="bg-[#4ade80]/8 rounded-xl px-3 py-2.5 flex items-center justify-between">
-            <span className="text-[#4ade80] text-sm font-medium">Выигрыш x{mult.toFixed(1)}</span>
-            <span className="text-[#4ade80] font-bold text-sm">+{winAmount.toFixed(2)} {sym}</span>
+          <div className="bg-[#4ade80]/8 border border-[#4ade80]/15 rounded-xl px-3 py-2 flex items-center gap-2.5">
+            <div className="w-8 h-8 rounded-lg bg-[#4ade80]/15 flex items-center justify-center shrink-0">
+              <span className="text-sm">🏆</span>
+            </div>
+            <div>
+              <p className="text-[#4ade80] font-semibold text-xs">Выигрыш!</p>
+              <p className="text-[#4ade80]/60 text-[10px]">+{winAmount.toFixed(2)} {sym} (x{mult.toFixed(1)})</p>
+            </div>
           </div>
         )}
 
+        <div className="flex gap-2">
+          <div className="flex-1 bg-[#111820] border border-white/5 rounded-xl px-3 py-2">
+            <p className="text-white/20 text-[9px] uppercase tracking-wider">Макс. выигрыш</p>
+            <p className="text-[#4ade80] font-bold text-xs mt-0.5">{maxWin.toFixed(2)} {sym}</p>
+          </div>
+          <div className="bg-[#111820] border border-white/5 rounded-xl px-2.5 py-2 flex items-center gap-1.5">
+            <button
+              onClick={() => setMines(p => Math.max(1, p - 1))}
+              disabled={phase === "playing"}
+              className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center text-white/40 active:bg-white/10 disabled:opacity-20"
+            ><Icon name="ChevronLeft" size={12} /></button>
+            <div className="text-center min-w-[36px]">
+              <p className="text-white font-bold text-sm leading-none">{mines}</p>
+              <p className="text-white/20 text-[8px] mt-0.5">ловушек</p>
+            </div>
+            <button
+              onClick={() => setMines(p => Math.min(MAX_MINES, p + 1))}
+              disabled={phase === "playing"}
+              className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center text-white/40 active:bg-white/10 disabled:opacity-20"
+            ><Icon name="ChevronRight" size={12} /></button>
+          </div>
+        </div>
+
         {phase !== "playing" && (
           <>
-            <div className="flex gap-2">
-              <div className="flex items-center gap-1.5 bg-white/[0.03] rounded-xl px-3 py-2 flex-1">
-                <button
-                  onClick={() => setMines(p => Math.max(1, p - 1))}
-                  className="text-white/30 active:text-white/60"
-                ><Icon name="Minus" size={14} /></button>
-                <div className="flex-1 text-center">
-                  <span className="text-white font-bold text-sm">{mines}</span>
-                  <span className="text-white/20 text-[10px] ml-1">мин</span>
-                </div>
-                <button
-                  onClick={() => setMines(p => Math.min(MAX_MINES, p + 1))}
-                  className="text-white/30 active:text-white/60"
-                ><Icon name="Plus" size={14} /></button>
-              </div>
-
-              <div className="flex items-center gap-1 bg-white/[0.03] rounded-xl px-3 py-2 flex-[1.5]">
-                <button
-                  onClick={() => {
-                    const v = Math.max(MIN_BET, betVal - (cur === "stars" ? 10 : 0.5));
-                    setBetInput(v.toFixed(2));
-                  }}
-                  className="text-white/30 active:text-white/60"
-                ><Icon name="Minus" size={14} /></button>
+            <div className="bg-[#111820] border border-white/5 rounded-xl px-2.5 py-2 flex items-center gap-2">
+              <button
+                onClick={() => setBetInput(Math.max(MIN_BET, betVal - (cur === "stars" ? 10 : 0.5)).toFixed(2))}
+                className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/40 active:bg-white/10 text-base font-bold shrink-0"
+              >-</button>
+              <div className="flex-1 flex items-center justify-center gap-1">
                 <input
                   type="text"
                   inputMode="decimal"
@@ -221,37 +242,37 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
                     const v = parseFloat(betInput);
                     setBetInput(isNaN(v) || v < MIN_BET ? MIN_BET.toFixed(2) : v.toFixed(2));
                   }}
-                  className="flex-1 bg-transparent text-center text-white font-bold text-sm outline-none min-w-0"
+                  className="bg-transparent text-center text-white text-lg font-bold outline-none w-full"
                 />
-                <span className="text-white/20 text-xs">{sym}</span>
-                <button
-                  onClick={() => setBetInput((betVal + (cur === "stars" ? 10 : 0.5)).toFixed(2))}
-                  className="text-white/30 active:text-white/60"
-                ><Icon name="Plus" size={14} /></button>
+                <span className="text-white/30 text-sm">{sym}</span>
               </div>
+              <button
+                onClick={() => setBetInput((betVal + (cur === "stars" ? 10 : 0.5)).toFixed(2))}
+                className="w-8 h-8 rounded-lg bg-white/5 flex items-center justify-center text-white/40 active:bg-white/10 text-base font-bold shrink-0"
+              >+</button>
             </div>
 
             <div className="flex gap-1.5">
-              {["MIN", "x2", "½", "MAX"].map(l => (
+              {[
+                { l: "MIN", fn: () => setBetInput(MIN_BET.toFixed(2)) },
+                { l: "x2", fn: () => setBetInput((betVal * 2).toFixed(2)) },
+                { l: "½", fn: () => setBetInput(Math.max(MIN_BET, betVal / 2).toFixed(2)) },
+                { l: "MAX", fn: () => setBetInput(bal.toFixed(2)) },
+              ].map(b => (
                 <button
-                  key={l}
-                  onClick={() => {
-                    if (l === "MIN") setBetInput(MIN_BET.toFixed(2));
-                    if (l === "x2") setBetInput((betVal * 2).toFixed(2));
-                    if (l === "½") setBetInput(Math.max(MIN_BET, betVal / 2).toFixed(2));
-                    if (l === "MAX") setBetInput(bal.toFixed(2));
-                  }}
-                  className="flex-1 py-1.5 rounded-lg bg-white/[0.03] text-white/25 text-[10px] font-medium active:bg-white/[0.06]"
-                >{l}</button>
+                  key={b.l}
+                  onClick={b.fn}
+                  className="flex-1 py-1.5 rounded-lg bg-white/[0.03] border border-white/[0.05] text-white/25 text-[10px] font-medium active:bg-white/[0.06]"
+                >{b.l}</button>
               ))}
             </div>
 
             <button
               onClick={start}
               disabled={betVal < MIN_BET || betVal > bal}
-              className="w-full py-3.5 rounded-xl bg-[#4ade80] text-black font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-25"
+              className="w-full py-3 rounded-xl bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-[#0a0e14] font-bold text-sm active:scale-[0.98] transition-transform disabled:opacity-25"
             >
-              {betVal > bal ? "Недостаточно средств" : "Играть"}
+              {betVal > bal ? "Недостаточно средств" : betVal < MIN_BET ? `Мин. ${MIN_BET} ${sym}` : "Играть"}
             </button>
           </>
         )}
@@ -260,10 +281,10 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
           <button
             onClick={cashOut}
             disabled={safe === 0}
-            className={`w-full py-3.5 rounded-xl font-bold text-sm active:scale-[0.98] transition-transform
-              ${safe > 0 ? "bg-[#4ade80] text-black" : "bg-white/[0.03] text-white/15"}`}
+            className={`w-full py-3 rounded-xl font-bold text-sm active:scale-[0.98] transition-transform
+              ${safe > 0 ? "bg-gradient-to-r from-[#4ade80] to-[#22c55e] text-[#0a0e14]" : "bg-white/[0.03] border border-white/5 text-white/15"}`}
           >
-            {safe > 0 ? `Забрать ${winAmount.toFixed(2)} ${sym}` : "Выберите ячейку"}
+            {safe > 0 ? `Забрать ${winAmount.toFixed(2)} ${sym} (x${mult.toFixed(1)})` : "Выберите ячейку..."}
           </button>
         )}
       </div>
