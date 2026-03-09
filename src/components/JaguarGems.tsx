@@ -222,11 +222,11 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
         </button>
         <div className="flex bg-white/[0.04] rounded-full p-0.5 border border-white/[0.06]">
           <button
-            onClick={() => { if (phase !== "playing") setCur("usdt"); }}
+            onClick={() => { if (phase !== "playing") { setCur("usdt"); setBetInput(MIN_BET_USDT.toFixed(2)); } }}
             className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${cur === "usdt" ? "bg-[#4ade80] text-[#0a0e14]" : "text-white/40"}`}
           >USDT</button>
           <button
-            onClick={() => { if (phase !== "playing") setCur("stars"); }}
+            onClick={() => { if (phase !== "playing") { setCur("stars"); setBetInput(MIN_BET_STARS.toFixed(2)); } }}
             className={`px-3 py-1 rounded-full text-[11px] font-semibold transition-all ${cur === "stars" ? "bg-[#4ade80] text-[#0a0e14]" : "text-white/40"}`}
           >Stars ★</button>
         </div>
