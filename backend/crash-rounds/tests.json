@@ -1,0 +1,1 @@
+{"tests": [{"name": "Get history", "method": "GET", "path": "/", "expectedStatus": 200, "expectedBody": {"history": "array"}, "bodyMatcher": "partial"}]}

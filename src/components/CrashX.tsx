@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback } from "react";
 import Icon from "@/components/ui/icon";
 
 const GAME_API = "https://functions.poehali.dev/64bf4a3e-c7fb-44f5-a1a9-b70cae660400";
+const ROUNDS_API = "https://functions.poehali.dev/5aa25d9b-d82f-49a4-85e2-db53e46f9461";
 const MIN_BET_USDT = 1;
 const MIN_BET_STARS = 5;
 const QUICK_BETS_USDT = [1, 5, 10, 50];
@@ -41,8 +42,22 @@ function generateCrashPoint(): number {
   return +(23 + Math.random() * 80).toFixed(2);
 }
 
-function generateHistory(): number[] {
-  return Array.from({ length: 30 }, () => generateCrashPoint());
+async function fetchHistory(): Promise<number[]> {
+  try {
+    const res = await fetch(ROUNDS_API);
+    const data = await res.json();
+    return data.history || [];
+  } catch { return []; }
+}
+
+async function saveRound(crashPoint: number) {
+  try {
+    await fetch(ROUNDS_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ crash_point: crashPoint }),
+    });
+  } catch { /* ignore */ }
 }
 
 function BetPanel({ betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, isCashedOut, cashOut, placeBet, betVal, currentWin, step }: {
@@ -157,7 +172,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [betInput1, setBetInput1] = useState(initialCurrency === "usdt" ? "1" : "5");
   const [betInput2, setBetInput2] = useState(initialCurrency === "usdt" ? "1" : "5");
   const [multiplier, setMultiplier] = useState(1.0);
-  const [history, setHistory] = useState<number[]>(generateHistory);
+  const [history, setHistory] = useState<number[]>([]);
   const [bet1Placed, setBet1Placed] = useState(0);
   const [bet2Placed, setBet2Placed] = useState(0);
   const [roundProgress, setRoundProgress] = useState(0);
@@ -194,6 +209,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
   useEffect(() => {
     if (phase !== "loading") return;
+    fetchHistory().then(h => { if (h.length > 0) setHistory(h); });
     const t = setInterval(() => {
       setLoadProg(p => {
         if (p >= 100) { clearInterval(t); setTimeout(() => startRoundWait(), 300); return 100; }
@@ -250,7 +266,9 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
         setFlyAway(true);
         setTimeout(() => {
           setPhase("crashed");
-          setHistory(prev => [crashRef.current, ...prev.slice(0, 29)]);
+          const cp = crashRef.current;
+          setHistory(prev => [cp, ...prev.slice(0, 29)]);
+          saveRound(cp);
           onRefreshBalance();
           setTimeout(() => {
             setBet1Placed(0);
