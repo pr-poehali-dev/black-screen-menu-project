@@ -1425,36 +1425,97 @@ const Index = () => {
 
         {active === 4 && (
           <div className="px-4 py-4 pb-6">
-            <div className="flex items-center gap-2 mb-4">
-              <Icon name="Briefcase" size={20} className="text-white" />
-              <span className="text-white font-semibold text-base">Кейсы</span>
-            </div>
-            <div className="grid grid-cols-2 gap-3">
-              {[10, 15, 20, 25, 50, 100, 260, 500, 670, 999].map((val) => (
-                <div
-                  key={val}
-                  className="flex flex-col items-center bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 gap-3"
-                >
-                  <div className="w-[90px] h-[90px] relative">
-                    <img
-                      src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/b2287a6f-856d-4fb5-8514-12e1e32994d5.jpg"
-                      alt={`${val} ${currency === "usdt" ? "$" : "★"}`}
-                      className="w-full h-full rounded-full object-cover"
-                    />
-                    <div className="absolute inset-0 flex items-center justify-center">
-                      <span className="text-white font-extrabold text-[18px] leading-none" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>{val}</span>
-                      <span className="text-white font-bold text-[14px] leading-none ml-1" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{currency === "usdt" ? "$" : "★"}</span>
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => setCaseRouletteOpen(val)}
-                    className="w-full py-2 rounded-xl bg-[#4ade80] text-black font-bold text-[13px] active:scale-[0.97] transition-transform"
-                  >
-                    Купить
-                  </button>
+            <div className="flex items-center justify-between mb-5">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-xl bg-[#4ade80]/20 flex items-center justify-center">
+                  <Icon name="Briefcase" size={16} className="text-[#4ade80]" />
                 </div>
-              ))}
+                <span className="text-white font-bold text-lg">Кейсы</span>
+              </div>
+              <span className="text-white/30 text-xs">{[10, 15, 20, 25, 50, 100, 260, 500, 670, 999].length} кейсов</span>
             </div>
+
+            {(() => {
+              const sym = currency === "usdt" ? "$" : "★";
+              const cases = [
+                { val: 10,  name: "Старт",      rarity: "common",    min: 1,   max: 25,   color: "#888", glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30", border: "rgba(120,120,120,0.25)" },
+                { val: 15,  name: "Новичок",    rarity: "common",    min: 1,   max: 30,   color: "#888", glow: "rgba(150,150,150,0.5)", gradient: "from-gray-600/30 to-gray-800/30", border: "rgba(120,120,120,0.25)" },
+                { val: 20,  name: "Везунчик",   rarity: "rare",      min: 3,   max: 50,   color: "#3b82f6", glow: "rgba(59,130,246,0.6)", gradient: "from-blue-600/25 to-blue-900/25", border: "rgba(59,130,246,0.3)" },
+                { val: 25,  name: "Удача",      rarity: "rare",      min: 5,   max: 75,   color: "#3b82f6", glow: "rgba(59,130,246,0.6)", gradient: "from-blue-600/25 to-blue-900/25", border: "rgba(59,130,246,0.3)" },
+                { val: 50,  name: "Форсаж",     rarity: "rare",      min: 10,  max: 150,  color: "#3b82f6", glow: "rgba(59,130,246,0.6)", gradient: "from-blue-600/25 to-blue-900/25", border: "rgba(59,130,246,0.3)" },
+                { val: 100, name: "Элита",      rarity: "epic",      min: 20,  max: 300,  color: "#a855f7", glow: "rgba(168,85,247,0.7)", gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)" },
+                { val: 260, name: "Премиум",    rarity: "epic",      min: 50,  max: 750,  color: "#a855f7", glow: "rgba(168,85,247,0.7)", gradient: "from-purple-600/25 to-purple-900/25", border: "rgba(168,85,247,0.35)" },
+                { val: 500, name: "Олигарх",    rarity: "legendary", min: 100, max: 1500, color: "#fbbf24", glow: "rgba(251,191,36,0.8)", gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)" },
+                { val: 670, name: "Магнат",     rarity: "legendary", min: 150, max: 2000, color: "#fbbf24", glow: "rgba(251,191,36,0.8)", gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)" },
+                { val: 999, name: "Хозяин",     rarity: "legendary", min: 200, max: 3000, color: "#fbbf24", glow: "rgba(251,191,36,0.8)", gradient: "from-yellow-500/25 to-orange-700/25", border: "rgba(251,191,36,0.4)" },
+              ];
+              const rarityLabel: Record<string, string> = { common: "Обычный", rare: "Редкий", epic: "Эпический", legendary: "Легендарный" };
+              return (
+                <div className="grid grid-cols-2 gap-3">
+                  {cases.map((c) => (
+                    <div
+                      key={c.val}
+                      onClick={() => setCaseRouletteOpen(c.val)}
+                      className={`relative flex flex-col rounded-2xl overflow-hidden cursor-pointer active:scale-[0.96] transition-all duration-200 bg-gradient-to-br ${c.gradient}`}
+                      style={{ border: `1px solid ${c.border}`, boxShadow: `0 4px 20px ${c.glow}33` }}
+                    >
+                      <div className="absolute inset-0 opacity-30" style={{ background: `radial-gradient(ellipse at 50% 0%, ${c.color}44, transparent 70%)` }} />
+
+                      <div className="relative z-10 flex flex-col items-center pt-5 pb-4 px-3 gap-3">
+                        <div
+                          className="w-[72px] h-[72px] rounded-full flex flex-col items-center justify-center relative"
+                          style={{
+                            background: `radial-gradient(circle at 35% 30%, ${c.color}55, ${c.color}11)`,
+                            border: `2px solid ${c.color}66`,
+                            boxShadow: `0 0 20px ${c.glow}, 0 0 40px ${c.glow}44`,
+                          }}
+                        >
+                          <div className="absolute inset-0 rounded-full" style={{ background: "radial-gradient(circle at 35% 30%, rgba(255,255,255,0.25), transparent 60%)" }} />
+                          <img
+                            src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/b2287a6f-856d-4fb5-8514-12e1e32994d5.jpg"
+                            alt={c.name}
+                            className="w-full h-full rounded-full object-cover opacity-60 absolute inset-0"
+                          />
+                          <span className="font-extrabold text-white relative z-10" style={{ fontSize: c.val >= 100 ? 14 : 17, textShadow: `0 0 12px ${c.glow}, 0 2px 4px rgba(0,0,0,0.9)` }}>
+                            {c.val}{sym}
+                          </span>
+                        </div>
+
+                        <div className="flex flex-col items-center gap-1 w-full">
+                          <span className="text-white font-bold text-sm">{c.name}</span>
+                          <div
+                            className="px-2 py-0.5 rounded-full text-[10px] font-semibold"
+                            style={{ background: `${c.color}22`, color: c.color, border: `1px solid ${c.color}44` }}
+                          >
+                            {rarityLabel[c.rarity]}
+                          </div>
+                          <span className="text-white/35 text-[10px] mt-0.5">
+                            {c.min}{sym} — {c.max}{sym}
+                          </span>
+                        </div>
+
+                        <button
+                          className="w-full py-2.5 rounded-xl font-bold text-[13px] transition-all active:scale-[0.97]"
+                          style={{
+                            background: c.rarity === "legendary"
+                              ? `linear-gradient(135deg, #fbbf24, #f97316)`
+                              : c.rarity === "epic"
+                              ? `linear-gradient(135deg, #a855f7, #7c3aed)`
+                              : c.rarity === "rare"
+                              ? `linear-gradient(135deg, #3b82f6, #1d4ed8)`
+                              : `linear-gradient(135deg, #6b7280, #374151)`,
+                            color: c.rarity === "legendary" ? "#000" : "#fff",
+                            boxShadow: `0 2px 12px ${c.glow}66`,
+                          }}
+                        >
+                          Открыть
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
           </div>
         )}
       </div>
