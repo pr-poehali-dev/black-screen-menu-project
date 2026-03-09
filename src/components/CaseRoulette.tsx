@@ -25,41 +25,47 @@ const RARITY_COLORS: Record<Rarity, { bg: string; glow: string; border: string; 
   legendary: { bg: "from-yellow-400 to-orange-600", glow: "rgba(251,191,36,0.9)",   border: "#fbbf24", text: "#fef08a" },
 };
 
-function getRarity(value: number): Rarity {
-  if (value >= 500) return "legendary";
-  if (value >= 100) return "epic";
-  if (value >= 20) return "rare";
+function getRarity(multiplier: number): Rarity {
+  if (multiplier >= 5) return "legendary";
+  if (multiplier >= 1.5) return "epic";
+  if (multiplier >= 0.6) return "rare";
   return "common";
 }
 
-function generateCoins(currencySymbol: string): Coin[] {
-  const lowValues = [1, 1, 1, 1, 2, 2, 3, 3, 5, 5, 5, 4, 4];
-  const midValues = [10, 15, 20, 25, 30, 50];
-  const highValues = [100, 200, 300, 500, 750, 1000];
+function getMultipliers(caseValue: number) {
+  const decimals = caseValue < 10 ? 2 : caseValue < 100 ? 1 : 0;
+  const round = (n: number) => parseFloat(n.toFixed(decimals));
+  return {
+    low:  [0.1, 0.15, 0.2, 0.25, 0.3, 0.4, 0.5].map(m => round(caseValue * m)),
+    mid:  [0.6, 0.75, 0.9, 1.1, 1.3, 1.5].map(m => round(caseValue * m)),
+    high: [2, 3, 5, 8, 12].map(m => round(caseValue * m)),
+  };
+}
 
+function generateCoins(currencySymbol: string, caseValue: number): Coin[] {
+  const { low, mid, high } = getMultipliers(caseValue);
   const coins: Coin[] = [];
   for (let i = 0; i < TOTAL_COINS; i++) {
     const rand = Math.random();
     let val: number;
-    if (rand < 0.65) val = lowValues[Math.floor(Math.random() * lowValues.length)];
-    else if (rand < 0.90) val = midValues[Math.floor(Math.random() * midValues.length)];
-    else val = highValues[Math.floor(Math.random() * highValues.length)];
-    const rarity = getRarity(val);
+    if (rand < 0.65) val = low[Math.floor(Math.random() * low.length)];
+    else if (rand < 0.90) val = mid[Math.floor(Math.random() * mid.length)];
+    else val = high[Math.floor(Math.random() * high.length)];
+    const rarity = getRarity(val / caseValue);
     const rc = RARITY_COLORS[rarity];
     coins.push({ value: val, label: `${val}${currencySymbol}`, rarity, color: rc.bg, glow: rc.glow });
   }
   return coins;
 }
 
-function pickWinValue(): number {
+function pickWinValue(caseValue: number): number {
+  const { low, mid, high } = getMultipliers(caseValue);
   const rand = Math.random();
-  if (rand < 0.45) return 1;
-  if (rand < 0.62) return 3;
-  if (rand < 0.77) return 5;
-  if (rand < 0.87) return 10;
-  if (rand < 0.93) return 25;
-  if (rand < 0.97) return 100;
-  return 500;
+  if (rand < 0.45) return low[Math.floor(Math.random() * low.length)];
+  if (rand < 0.77) return mid[Math.floor(Math.random() * mid.length)];
+  if (rand < 0.95) return high[0];
+  if (rand < 0.98) return high[Math.floor(Math.random() * 3) + 1];
+  return high[high.length - 1];
 }
 
 interface Particle {
@@ -126,7 +132,7 @@ interface CaseRouletteProps {
 
 export default function CaseRoulette({ caseValue, currency, balance, onBalanceChange, onClose }: CaseRouletteProps) {
   const currencySymbol = currency === "usdt" ? "$" : "★";
-  const [coins, setCoins] = useState<Coin[]>(() => generateCoins(currencySymbol));
+  const [coins, setCoins] = useState<Coin[]>(() => generateCoins(currencySymbol, caseValue));
   const [spinning, setSpinning] = useState(false);
   const [finished, setFinished] = useState(false);
   const [winCoin, setWinCoin] = useState<Coin | null>(null);
@@ -153,7 +159,7 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
       setDeducted(true);
     }
 
-    const desiredWinValue = pickWinValue();
+    const desiredWinValue = pickWinValue(caseValue);
     let targetIdx = coins.findIndex((c) => c.value === desiredWinValue);
     if (targetIdx === -1 || targetIdx < VISIBLE_COINS + 5) {
       for (let i = TOTAL_COINS - 10; i >= VISIBLE_COINS + 5; i--) {
@@ -161,7 +167,7 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
       }
     }
     if (targetIdx < VISIBLE_COINS + 5) {
-      const rarity = getRarity(desiredWinValue);
+      const rarity = getRarity(desiredWinValue / caseValue);
       const rc = RARITY_COLORS[rarity];
       coins[TOTAL_COINS - 8] = { value: desiredWinValue, label: `${desiredWinValue}${currencySymbol}`, rarity, color: rc.bg, glow: rc.glow };
       targetIdx = TOTAL_COINS - 8;
@@ -218,7 +224,7 @@ export default function CaseRoulette({ caseValue, currency, balance, onBalanceCh
 
   const handleOpenAgain = () => {
     if (balance < caseValue) { setNotEnough(true); return; }
-    const newCoins = generateCoins(currencySymbol);
+    const newCoins = generateCoins(currencySymbol, caseValue);
     setCoins(newCoins);
     setSpinning(false);
     setFinished(false);
