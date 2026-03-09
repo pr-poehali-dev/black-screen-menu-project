@@ -325,12 +325,16 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const renderGraph = () => {
     const w = 360;
     const h = 200;
-    const px = (rocketPos.x / 100) * w;
+    const rawX = (rocketPos.x / 100) * w;
     const py = (rocketPos.y / 100) * h;
     const isCrashedOrAway = phase === "crashed" || flyAway;
 
+    const maxRocketX = w * 0.45;
+    const rocketX = Math.min(rawX, maxRocketX);
+    const scrollOffset = rawX > maxRocketX ? rawX - maxRocketX : 0;
+
     return (
-      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "visible" }}>
+      <svg viewBox={`0 0 ${w} ${h}`} className="w-full h-full" style={{ overflow: "hidden" }}>
         <defs>
           <linearGradient id="lineGrad" x1="0" y1="1" x2="1" y2="0">
             <stop offset="0%" stopColor="#7c3aed" />
@@ -346,13 +350,13 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           <line key={f} x1="0" y1={h * f} x2={w} y2={h * f} stroke="white" strokeOpacity="0.03" strokeDasharray="4 4" />
         ))}
         {!isCrashedOrAway && (
-          <>
-            <polygon points={`0,${h} 0,${py} ${px},${py} ${px},${h}`} fill="url(#fillGrad)" />
-            <path d={`M 0 ${h} Q ${px * 0.3} ${h - (h - py) * 0.2} ${px} ${py}`} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
-          </>
+          <g style={{ transform: `translateX(${-scrollOffset}px)` }}>
+            <polygon points={`0,${h} 0,${py} ${rawX},${py} ${rawX},${h}`} fill="url(#fillGrad)" />
+            <path d={`M 0 ${h} Q ${rawX * 0.3} ${h - (h - py) * 0.2} ${rawX} ${py}`} fill="none" stroke="url(#lineGrad)" strokeWidth="3" strokeLinecap="round" filter="url(#glow)" />
+          </g>
         )}
         {!isCrashedOrAway && (
-          <g style={{ transform: `translate(${px}px, ${py - 16}px)` }}>
+          <g style={{ transform: `translate(${rocketX}px, ${py - 16}px)` }}>
             <text x="0" y="0" fontSize="28" textAnchor="middle" style={{ filter: "drop-shadow(0 0 8px rgba(124,58,237,0.6))" }}>🚀</text>
           </g>
         )}
