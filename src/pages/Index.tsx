@@ -1369,25 +1369,27 @@ const Index = () => {
               <Icon name="Briefcase" size={20} className="text-white" />
               <span className="text-white font-semibold text-base">Кейсы</span>
             </div>
-            <div className="grid grid-cols-3 gap-3">
+            <div className="grid grid-cols-2 gap-3">
               {[10, 15, 20, 25, 50, 100, 260, 500, 670, 999].map((val) => (
-                <button
+                <div
                   key={val}
-                  className="flex flex-col items-center gap-1.5 bg-white/[0.03] border border-white/[0.06] rounded-2xl p-3 active:scale-[0.96] transition-transform"
+                  className="flex flex-col items-center bg-white/[0.03] border border-white/[0.06] rounded-2xl p-4 gap-3"
                 >
-                  <div className="w-[72px] h-[72px] relative">
+                  <div className="w-[90px] h-[90px] relative">
                     <img
                       src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/b2287a6f-856d-4fb5-8514-12e1e32994d5.jpg"
                       alt={`${val} ★`}
                       className="w-full h-full rounded-full object-cover"
                     />
                     <div className="absolute inset-0 flex flex-col items-center justify-center">
-                      <span className="text-white font-extrabold text-[16px] leading-none" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>{val}</span>
-                      <span className="text-white font-bold text-[12px] leading-none mt-0.5" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>★</span>
+                      <span className="text-white font-extrabold text-[18px] leading-none" style={{ textShadow: "0 1px 4px rgba(0,0,0,0.6)" }}>{val}</span>
+                      <span className="text-white font-bold text-[13px] leading-none mt-0.5" style={{ textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>★</span>
                     </div>
                   </div>
-                  <span className="text-white/50 text-[11px] font-medium">{val} ★</span>
-                </button>
+                  <button className="w-full py-2 rounded-xl bg-[#4ade80] text-black font-bold text-[13px] active:scale-[0.97] transition-transform">
+                    Купить
+                  </button>
+                </div>
               ))}
             </div>
           </div>
