@@ -1,5 +1,6 @@
 import { useState, useCallback, useEffect } from "react";
 import JaguarGems from "@/components/JaguarGems";
+import CrashX from "@/components/CrashX";
 
 const copyId = (id: string | number) => {
   navigator.clipboard.writeText(String(id));
@@ -118,6 +119,7 @@ const Index = () => {
   const [starsWithdrawLoading, setStarsWithdrawLoading] = useState(false);
   const [starsWithdrawSuccess, setStarsWithdrawSuccess] = useState(false);
   const [gameOpen, setGameOpen] = useState(false);
+  const [crashOpen, setCrashOpen] = useState(false);
 
   useEffect(() => {
     const timer = setInterval(() => {
@@ -1353,6 +1355,7 @@ const Index = () => {
                 </div>
               </button>
               <button
+                onClick={() => setCrashOpen(true)}
                 className="group flex flex-col bg-[#111820] border border-white/5 rounded-2xl overflow-hidden active:scale-[0.97] transition-transform"
               >
                 <div className="relative aspect-[3/4] overflow-hidden rounded-2xl">
@@ -1437,6 +1440,21 @@ const Index = () => {
           ))}
         </div>
       </nav>
+
+      {crashOpen && (
+        <CrashX
+          onClose={() => { setCrashOpen(false); fetchBalance(); }}
+          userId={userId}
+          usdtBalance={userBalance}
+          starsBalance={starsBalance}
+          onBalanceChange={(cur, delta) => {
+            if (cur === "usdt") setUserBalance(prev => +(prev + delta).toFixed(2));
+            else setStarsBalance(prev => +(prev + delta).toFixed(2));
+          }}
+          onRefreshBalance={fetchBalance}
+          initialCurrency={currency}
+        />
+      )}
 
       {gameOpen && (
         <JaguarGems
