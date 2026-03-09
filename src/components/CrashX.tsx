@@ -228,7 +228,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
         const now = Date.now() / 1000;
         const localElapsed = Math.max(0, (now - serverStartedAtRef.current) + timeOffsetRef.current);
-        const m = +(1 + localElapsed * 0.15).toFixed(2);
+        const m = +(1 + localElapsed * 0.5).toFixed(2);
 
         const yBase = Math.max(100 - localElapsed * 8, 25);
         const wobble = Math.sin(localElapsed * 3) * 2.5;
