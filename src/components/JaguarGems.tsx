@@ -5,19 +5,33 @@ const CELLS = 25;
 const MAX_MINES = 7;
 const MIN_BET = 0.5;
 const MULT_STEP = 0.5;
+const GAME_API = "https://functions.poehali.dev/64bf4a3e-c7fb-44f5-a1a9-b70cae660400";
 
 type Cell = "hidden" | "gem" | "bomb";
 type Phase = "loading" | "idle" | "playing" | "won" | "lost";
 type Cur = "usdt" | "stars";
 
+async function apiBalance(userId: string, action: "bet" | "win", amount: number, currency: Cur) {
+  try {
+    const res = await fetch(GAME_API, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ user_id: userId, action, amount, currency }),
+    });
+    return await res.json();
+  } catch { return null; }
+}
+
 interface Props {
   onClose: () => void;
+  userId: string;
   usdtBalance: number;
   starsBalance: number;
   onBalanceChange: (c: Cur, d: number) => void;
+  onRefreshBalance: () => void;
 }
 
-export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalanceChange }: Props) {
+export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance, onBalanceChange, onRefreshBalance }: Props) {
   const [phase, setPhase] = useState<Phase>("loading");
   const [bombs, setBombs] = useState<Set<number>>(new Set());
   const [revealed, setRevealed] = useState<Set<number>>(new Set());
@@ -57,8 +71,10 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
     revealTimeoutRef.current = setTimeout(() => setJustRevealed(null), 400);
   }, []);
 
-  const start = useCallback(() => {
+  const start = useCallback(async () => {
     if (betVal < MIN_BET || betVal > bal) return;
+    const res = await apiBalance(userId, "bet", betVal, cur);
+    if (!res || !res.ok) return;
     onBalanceChange(cur, -betVal);
     setBet(betVal);
     const b = new Set<number>();
@@ -68,7 +84,7 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
     setCells(Array(CELLS).fill("hidden"));
     setMult(1);
     setPhase("playing");
-  }, [betVal, mines, bal, onBalanceChange, cur]);
+  }, [betVal, mines, bal, onBalanceChange, cur, userId]);
 
   const reveal = useCallback((i: number) => {
     if (phase !== "playing" || revealed.has(i)) return;
@@ -94,23 +110,28 @@ export default function JaguarGems({ onClose, usdtBalance, starsBalance, onBalan
     const newMult = 1 + safe * MULT_STEP;
     setMult(newMult);
     if (safe >= CELLS - mines) {
-      onBalanceChange(cur, bet * newMult);
+      const winnings = bet * newMult;
+      apiBalance(userId, "win", winnings, cur).then(() => onRefreshBalance());
+      onBalanceChange(cur, winnings);
       bombs.forEach(b => { nc[b] = "bomb"; });
       setCells(nc);
       setPhase("won");
     }
-  }, [phase, revealed, bombs, cells, mines, bet, onBalanceChange, cur, triggerRevealAnim]);
+  }, [phase, revealed, bombs, cells, mines, bet, onBalanceChange, cur, triggerRevealAnim, userId, onRefreshBalance]);
 
-  const cashOut = useCallback(() => {
+  const cashOut = useCallback(async () => {
     if (phase !== "playing") return;
     const safe = [...revealed].filter(r => !bombs.has(r)).length;
     if (safe === 0) return;
-    onBalanceChange(cur, bet * mult);
+    const winnings = bet * mult;
+    await apiBalance(userId, "win", winnings, cur);
+    onBalanceChange(cur, winnings);
+    onRefreshBalance();
     const nc = [...cells];
     bombs.forEach(b => { nc[b] = "bomb"; });
     setCells(nc);
     setPhase("won");
-  }, [phase, revealed, bet, mult, onBalanceChange, bombs, cells, cur]);
+  }, [phase, revealed, bet, mult, onBalanceChange, bombs, cells, cur, userId, onRefreshBalance]);
 
   const safe = [...revealed].filter(r => !bombs.has(r)).length;
   const winAmount = bet * mult;
