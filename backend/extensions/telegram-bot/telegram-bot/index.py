@@ -73,8 +73,8 @@ def handle_start(chat_id: int, args: str = "") -> None:
                 bot.send_message(chat_id, "Неверная ссылка для оплаты. Попробуйте ещё раз через приложение.")
                 return
 
-            if amount_stars < 50 or amount_stars > 10000:
-                bot.send_message(chat_id, "Сумма должна быть от 50 до 10000 звёзд.")
+            if amount_stars < 10 or amount_stars > 10000:
+                bot.send_message(chat_id, "Сумма должна быть от 10 до 10000 звёзд.")
                 return
 
             usdt_amount = stars_to_usdt(amount_stars)

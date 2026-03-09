@@ -30,6 +30,9 @@ const VOUCHER_URL = "https://functions.poehali.dev/67465d27-c387-428b-a82c-c47b6
 const USDT_ICON = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/521d6370-ca4b-47aa-9be0-a7e2edc0027f.jpg";
 const TG_STARS_ICON = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/182f0046-3f4d-43a9-b878-2bbee30070c6.jpg";
 
+const STARS_RATE = 0.02;
+const usdtToStars = (usdt: number) => Math.round(usdt / STARS_RATE);
+
 const WITHDRAW_NETWORKS = [
   { id: "ERC20", name: "Tether ERC20", label: "ERC20", color: "#50AF95" },
   { id: "TRC20", name: "Tether TRC20", label: "TRC20", color: "#50AF95" },
@@ -74,7 +77,7 @@ const Index = () => {
   const [depositOpen, setDepositOpen] = useState(false);
   const [cryptoPayOpen, setCryptoPayOpen] = useState(false);
   const [tgStarsOpen, setTgStarsOpen] = useState(false);
-  const [tgStarsAmount, setTgStarsAmount] = useState("50");
+  const [tgStarsAmount, setTgStarsAmount] = useState("10");
   const [tgStarsError, setTgStarsError] = useState("");
   const [tgStarsLoading, setTgStarsLoading] = useState(false);
   const [bonusOpen, setBonusOpen] = useState(false);
@@ -91,6 +94,8 @@ const Index = () => {
   const [depositError, setDepositError] = useState("");
   const [depositLoading, setDepositLoading] = useState(false);
   const [userBalance, setUserBalance] = useState(0);
+  const [currency, setCurrency] = useState<"usdt" | "stars">("usdt");
+  const [currencyPickerOpen, setCurrencyPickerOpen] = useState(false);
   const [currentSlide, setCurrentSlide] = useState(0);
   const [isAdmin, setIsAdmin] = useState(false);
   const [adminRole, setAdminRole] = useState(0);
@@ -294,7 +299,11 @@ const Index = () => {
           <div className="px-4 pb-3">
             <div className="bg-white/5 border border-white/10 rounded-xl p-4">
               <span className="text-[12px] text-white/40">Счет</span>
-              <div className="text-[22px] font-bold text-white mt-0.5 tracking-tight">{userBalance.toFixed(2)} USDT</div>
+              <div className="text-[22px] font-bold text-white mt-0.5 tracking-tight">
+                {currency === "usdt"
+                  ? `${userBalance.toFixed(userBalance < 0.01 && userBalance > 0 ? 5 : 2)} USDT`
+                  : `${usdtToStars(userBalance).toLocaleString()} Stars`}
+              </div>
               <div className="flex gap-2.5 mt-3">
                 <button
                   onClick={() => { setProfileOpen(false); setDepositOpen(true); }}
@@ -401,7 +410,7 @@ const Index = () => {
             </button>
 
             <button
-              onClick={() => { setDepositOpen(false); setTgStarsOpen(true); setTgStarsAmount("50"); }}
+              onClick={() => { setDepositOpen(false); setTgStarsOpen(true); setTgStarsAmount("10"); }}
               className="w-full flex items-center gap-3 bg-[#1a1a1a] border border-white/10 rounded-2xl px-4 py-3 active:bg-white/5 transition-colors relative"
             >
               <div className="absolute top-2.5 left-2.5">
@@ -418,7 +427,7 @@ const Index = () => {
               </div>
               <div className="flex flex-col items-start flex-1 min-w-0">
                 <span className="text-white font-bold text-[15px]">Телеграм Звёзды</span>
-                <span className="text-white/40 text-[12px]">от 50 до 10000</span>
+                <span className="text-white/40 text-[12px]">от 10 до 10000</span>
               </div>
               <Icon name="ChevronRight" size={18} className="text-white/30 shrink-0" />
             </button>
@@ -574,7 +583,7 @@ const Index = () => {
               </div>
               <div className="flex flex-col">
                 <span className="text-white font-bold text-[15px]">Телеграм Звёзды</span>
-                <span className="text-white/40 text-[13px]">от 50 до 10000 звёзд</span>
+                <span className="text-white/40 text-[13px]">от 10 до 10000 звёзд</span>
               </div>
             </div>
           </div>
@@ -582,7 +591,7 @@ const Index = () => {
           <div className="px-4 pt-5">
             <div className="flex items-center justify-between mb-2">
               <span className="text-white/70 text-[14px] font-medium">Вы платите</span>
-              <span className="text-white/30 text-[12px]">Минимум: 50 звёзд</span>
+              <span className="text-white/30 text-[12px]">Минимум: 10 звёзд</span>
             </div>
             <div className="bg-[#111] border border-white/10 rounded-2xl px-4 py-3 flex items-center gap-3">
               <div className="w-8 h-8 rounded-full bg-[#f5a623]/20 flex items-center justify-center shrink-0">
@@ -595,7 +604,7 @@ const Index = () => {
                 value={tgStarsAmount}
                 onChange={(e) => { setTgStarsAmount(e.target.value); setTgStarsError(""); }}
                 className="ml-auto bg-transparent text-white text-right text-[20px] font-bold w-[120px] outline-none [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                min="50"
+                min="10"
                 max="10000"
               />
             </div>
@@ -613,8 +622,8 @@ const Index = () => {
                   setTgStarsError("Введите количество звёзд");
                   return;
                 }
-                if (amount < 50) {
-                  setTgStarsError("Минимальное количество — 50 звёзд");
+                if (amount < 10) {
+                  setTgStarsError("Минимальное количество — 10 звёзд");
                   return;
                 }
                 if (amount > 10000) {
@@ -1073,15 +1082,53 @@ const Index = () => {
           </div>
         </div>
         <div className="flex items-center gap-2 shrink-0 ml-2">
-          <div className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5">
-            <div className="w-6 h-6 rounded-full shrink-0 overflow-hidden">
-              <img
-                src="https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/bucket/521d6370-ca4b-47aa-9be0-a7e2edc0027f.jpg"
-                alt="USDT"
-                className="w-full h-full object-cover scale-[1.8]"
-              />
-            </div>
-            <span className="text-white text-xs font-medium">{userBalance.toFixed(2)}</span>
+          <div className="relative">
+            <button
+              onClick={() => setCurrencyPickerOpen(!currencyPickerOpen)}
+              className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5"
+            >
+              {currency === "usdt" ? (
+                <div className="w-6 h-6 rounded-full shrink-0 overflow-hidden">
+                  <img src={USDT_ICON} alt="USDT" className="w-full h-full object-cover scale-[1.8]" />
+                </div>
+              ) : (
+                <div className="w-6 h-6 rounded-full bg-[#f5a623]/20 flex items-center justify-center shrink-0">
+                  <Icon name="Star" size={13} className="text-[#f5a623]" />
+                </div>
+              )}
+              <span className="text-white text-xs font-medium">
+                {currency === "usdt" ? userBalance.toFixed(userBalance < 0.01 && userBalance > 0 ? 5 : 2) : usdtToStars(userBalance).toLocaleString()}
+              </span>
+              <Icon name="ChevronDown" size={12} className="text-white/40" />
+            </button>
+            {currencyPickerOpen && (
+              <>
+                <div className="fixed inset-0 z-40" onClick={() => setCurrencyPickerOpen(false)} />
+                <div className="absolute top-full right-0 mt-1.5 bg-[#1a1a1a] border border-white/10 rounded-xl overflow-hidden z-50 min-w-[160px] shadow-xl">
+                  <button
+                    onClick={() => { setCurrency("usdt"); setCurrencyPickerOpen(false); }}
+                    className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 transition-colors ${currency === "usdt" ? "bg-white/10" : "active:bg-white/5"}`}
+                  >
+                    <div className="w-5 h-5 rounded-full shrink-0 overflow-hidden">
+                      <img src={USDT_ICON} alt="USDT" className="w-full h-full object-cover scale-[1.8]" />
+                    </div>
+                    <span className="text-white text-[13px] font-medium flex-1 text-left">USDT</span>
+                    {currency === "usdt" && <Icon name="Check" size={14} className="text-[#4ade80]" />}
+                  </button>
+                  <div className="h-px bg-white/5" />
+                  <button
+                    onClick={() => { setCurrency("stars"); setCurrencyPickerOpen(false); }}
+                    className={`w-full flex items-center gap-2.5 px-3.5 py-2.5 transition-colors ${currency === "stars" ? "bg-white/10" : "active:bg-white/5"}`}
+                  >
+                    <div className="w-5 h-5 rounded-full bg-[#f5a623]/20 flex items-center justify-center shrink-0">
+                      <Icon name="Star" size={11} className="text-[#f5a623]" />
+                    </div>
+                    <span className="text-white text-[13px] font-medium flex-1 text-left">Stars</span>
+                    {currency === "stars" && <Icon name="Check" size={14} className="text-[#4ade80]" />}
+                  </button>
+                </div>
+              </>
+            )}
           </div>
           <button
             onClick={() => setDepositOpen(true)}
