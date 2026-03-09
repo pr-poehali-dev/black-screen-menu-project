@@ -7,7 +7,40 @@ const MIN_BET_STARS = 5;
 const QUICK_BETS_USDT = [1, 5, 10, 50];
 const QUICK_BETS_STARS = [5, 25, 50, 100];
 const ROUND_WAIT = 5000;
-const JETPACK_GUY = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/8e38540b-42b6-4db5-a378-f1e0c3df617b.jpg";
+const JETPACK_GUY_SRC = "https://cdn.poehali.dev/projects/0458ff35-1488-42b4-a47d-9a48901b711f/files/8e38540b-42b6-4db5-a378-f1e0c3df617b.jpg";
+
+let _transparentCache: string | null = null;
+function loadTransparentGuy(): Promise<string> {
+  if (_transparentCache) return Promise.resolve(_transparentCache);
+  return new Promise((resolve) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous";
+    img.onload = () => {
+      const c = document.createElement("canvas");
+      c.width = img.width;
+      c.height = img.height;
+      const ctx = c.getContext("2d")!;
+      ctx.drawImage(img, 0, 0);
+      const id = ctx.getImageData(0, 0, c.width, c.height);
+      const d = id.data;
+      const bg: [number, number, number] = [19, 17, 42];
+      for (let i = 0; i < d.length; i += 4) {
+        const dr = d[i] - bg[0], dg = d[i+1] - bg[1], db = d[i+2] - bg[2];
+        const dist = Math.sqrt(dr*dr + dg*dg + db*db);
+        if (dist < 45) {
+          d[i+3] = 0;
+        } else if (dist < 75) {
+          d[i+3] = Math.round(255 * (dist - 45) / 30);
+        }
+      }
+      ctx.putImageData(id, 0, 0);
+      _transparentCache = c.toDataURL("image/png");
+      resolve(_transparentCache);
+    };
+    img.onerror = () => resolve(JETPACK_GUY_SRC);
+    img.src = JETPACK_GUY_SRC;
+  });
+}
 
 type Cur = "usdt" | "stars";
 type Phase = "loading" | "roundWait" | "flying" | "crashed" | "cashedOut";
@@ -162,12 +195,15 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [currentWin1, setCurrentWin1] = useState(0);
   const [currentWin2, setCurrentWin2] = useState(0);
 
+  const [jetpackSrc, setJetpackSrc] = useState(JETPACK_GUY_SRC);
   const animRef = useRef<number>(0);
   const startTimeRef = useRef(0);
   const crashRef = useRef(0);
   const cashedOut1Ref = useRef(false);
   const cashedOut2Ref = useRef(false);
   const roundTimerRef = useRef<ReturnType<typeof setInterval>>();
+
+  useEffect(() => { loadTransparentGuy().then(setJetpackSrc); }, []);
 
   const bal = cur === "usdt" ? usdtBalance : starsBalance;
   const betVal1 = parseFloat(betInput1) || 0;
@@ -353,7 +389,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           </>
         )}
         {!isCrashedOrAway && (
-          <image href={JETPACK_GUY} x={px - 24} y={py - 40} width="48" height="48" style={{ filter: "drop-shadow(0 0 8px rgba(124,58,237,0.6))", }} />
+          <image href={jetpackSrc} x={px - 24} y={py - 40} width="48" height="48" style={{ filter: "drop-shadow(0 0 8px rgba(124,58,237,0.6))" }} />
         )}
       </svg>
     );
@@ -363,7 +399,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     return (
       <div className="fixed inset-0 z-[200] bg-[#13112a] flex flex-col items-center justify-center">
         <div className="flex flex-col items-center gap-4">
-          <img src={JETPACK_GUY} alt="Lucky Jet" className="w-20 h-20 object-contain animate-bounce rounded-2xl" />
+          <img src={jetpackSrc} alt="Lucky Jet" className="w-20 h-20 object-contain animate-bounce" />
           <span className="text-purple-400 font-extrabold text-2xl tracking-widest">LUCKY JET</span>
           <div className="w-48 h-1.5 bg-white/10 rounded-full overflow-hidden">
             <div className="h-full bg-gradient-to-r from-[#7c3aed] to-[#c026d3] rounded-full transition-all" style={{ width: `${Math.min(loadProg, 100)}%` }} />
@@ -425,7 +461,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
 
         {isWaiting && (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
-            <img src={JETPACK_GUY} alt="Lucky Jet" className="w-16 h-16 object-contain mb-3 animate-bounce rounded-2xl" />
+            <img src={jetpackSrc} alt="Lucky Jet" className="w-16 h-16 object-contain mb-3 animate-bounce" />
             <span className="text-white font-extrabold text-sm tracking-wider uppercase">Ожидание раунда</span>
             <div className="w-40 h-1.5 bg-white/10 rounded-full mt-3 overflow-hidden">
               <div className="h-full bg-gradient-to-r from-[#7c3aed] to-[#c026d3] rounded-full transition-all duration-100" style={{ width: `${roundProgress}%` }} />
