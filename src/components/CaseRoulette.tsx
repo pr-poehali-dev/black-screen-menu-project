@@ -44,16 +44,20 @@ function pickWinIndex(): number {
 interface CaseRouletteProps {
   caseValue: number;
   currency: "usdt" | "stars";
+  balance: number;
+  onBalanceChange: (delta: number) => void;
   onClose: () => void;
 }
 
-export default function CaseRoulette({ caseValue, currency, onClose }: CaseRouletteProps) {
+export default function CaseRoulette({ caseValue, currency, balance, onBalanceChange, onClose }: CaseRouletteProps) {
   const currencySymbol = currency === "usdt" ? "$" : "★";
   const [coins] = useState(() => generateCoins(currencySymbol));
   const [spinning, setSpinning] = useState(false);
   const [finished, setFinished] = useState(false);
   const [winCoin, setWinCoin] = useState<{ value: number; label: string } | null>(null);
   const [offset, setOffset] = useState(0);
+  const [notEnough, setNotEnough] = useState(false);
+  const [deducted, setDeducted] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const animRef = useRef<number>(0);
 
@@ -61,6 +65,16 @@ export default function CaseRoulette({ caseValue, currency, onClose }: CaseRoule
 
   const startSpin = useCallback(() => {
     if (spinning || finished) return;
+
+    if (balance < caseValue) {
+      setNotEnough(true);
+      return;
+    }
+
+    if (!deducted) {
+      onBalanceChange(-caseValue);
+      setDeducted(true);
+    }
 
     const desiredWinValue = pickWinIndex();
     let targetIdx = coins.findIndex((c) => c.value === desiredWinValue);
@@ -104,11 +118,12 @@ export default function CaseRoulette({ caseValue, currency, onClose }: CaseRoule
         setSpinning(false);
         setFinished(true);
         setWinCoin(coins[targetIdx]);
+        onBalanceChange(coins[targetIdx].value);
       }
     }
 
     animRef.current = requestAnimationFrame(animate);
-  }, [spinning, finished, coins, currencySymbol]);
+  }, [spinning, finished, coins, currencySymbol, balance, caseValue, deducted, onBalanceChange]);
 
   useEffect(() => {
     return () => {
@@ -175,6 +190,15 @@ export default function CaseRoulette({ caseValue, currency, onClose }: CaseRoule
             </div>
           </div>
         </div>
+
+        {notEnough && (
+          <div className="mt-6 flex flex-col items-center gap-2">
+            <span className="text-red-400 font-bold text-base">Недостаточно средств</span>
+            <span className="text-white/50 text-sm">
+              Нужно: {caseValue}{currencySymbol} — Баланс: {balance.toFixed(2)}{currencySymbol}
+            </span>
+          </div>
+        )}
 
         {finished && winCoin && (
           <div className="mt-6 flex flex-col items-center gap-3 animate-in fade-in zoom-in duration-300">
