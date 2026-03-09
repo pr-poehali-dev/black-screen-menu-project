@@ -1247,25 +1247,25 @@ const Index = () => {
             <span className="text-white font-extrabold text-[8px] tracking-[0.55em] uppercase text-right">official</span>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0 ml-2">
-          <div className="relative">
+        <div className="flex items-center gap-1.5 min-w-0 ml-2">
+          <div className="relative min-w-0">
             <button
               onClick={() => setCurrencyPickerOpen(!currencyPickerOpen)}
-              className="flex items-center gap-1.5 bg-white/5 rounded-full px-3 py-1.5"
+              className="flex items-center gap-1.5 bg-white/5 rounded-full px-2.5 py-1.5 min-w-0 max-w-[130px]"
             >
               {currency === "usdt" ? (
-                <div className="w-6 h-6 rounded-full shrink-0 overflow-hidden">
+                <div className="w-5 h-5 rounded-full shrink-0 overflow-hidden">
                   <img src={USDT_ICON} alt="USDT" className="w-full h-full object-cover scale-[1.8]" />
                 </div>
               ) : (
-                <div className="w-6 h-6 rounded-full bg-[#f5a623]/20 flex items-center justify-center shrink-0">
-                  <Icon name="Star" size={13} className="text-[#f5a623]" />
+                <div className="w-5 h-5 rounded-full bg-[#f5a623]/20 flex items-center justify-center shrink-0">
+                  <Icon name="Star" size={11} className="text-[#f5a623]" />
                 </div>
               )}
-              <span className="text-white text-xs font-medium">
+              <span className="text-white text-xs font-medium truncate">
                 {currency === "usdt" ? userBalance.toFixed(userBalance < 0.01 && userBalance > 0 ? 5 : 2) : starsBalance.toLocaleString()}
               </span>
-              <Icon name="ChevronDown" size={12} className="text-white/40" />
+              <Icon name="ChevronDown" size={12} className="text-white/40 shrink-0" />
             </button>
             {currencyPickerOpen && (
               <>
@@ -1298,10 +1298,11 @@ const Index = () => {
           </div>
           <button
             onClick={() => setDepositOpen(true)}
-            className="flex items-center gap-1.5 bg-white text-black text-xs font-semibold rounded-full px-4 py-2 hover:bg-white/90 active:bg-white/80 transition-colors"
+            className="flex items-center gap-1 bg-white text-black text-xs font-semibold rounded-full px-3 py-2 hover:bg-white/90 active:bg-white/80 transition-colors shrink-0 whitespace-nowrap"
           >
-            <Icon name="Plus" size={14} />
-            Пополнить
+            <Icon name="Plus" size={13} className="shrink-0" />
+            <span className="hidden xs:inline">Пополнить</span>
+            <span className="xs:hidden">Пополнить</span>
           </button>
         </div>
       </header>
