@@ -44,11 +44,18 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
   const [bet, setBet] = useState(0);
   const [justRevealed, setJustRevealed] = useState<number | null>(null);
   const [shakeGrid, setShakeGrid] = useState(false);
+  const [winChance, setWinChance] = useState(50);
   const revealTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   const bal = cur === "usdt" ? usdtBalance : starsBalance;
   const betVal = parseFloat(betInput) || 0;
   const sym = cur === "usdt" ? "$" : "★";
+
+  useEffect(() => {
+    fetch(`${GAME_API}?game=mines`).then(r => r.json()).then(d => {
+      if (d.win_chance != null) setWinChance(d.win_chance);
+    }).catch(() => {});
+  }, []);
 
   useEffect(() => {
     if (phase !== "loading") return;
@@ -77,8 +84,11 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
     if (!res || !res.ok) return;
     onBalanceChange(cur, -betVal);
     setBet(betVal);
+    const extraFactor = (100 - winChance) / 100;
+    const extraMines = Math.round((CELLS - mines) * extraFactor * 0.4);
+    const totalMines = Math.min(mines + extraMines, CELLS - 1);
     const b = new Set<number>();
-    while (b.size < mines) b.add(Math.floor(Math.random() * CELLS));
+    while (b.size < totalMines) b.add(Math.floor(Math.random() * CELLS));
     setBombs(b);
     setRevealed(new Set());
     setCells(Array(CELLS).fill("hidden"));
@@ -110,7 +120,7 @@ export default function JaguarGems({ onClose, userId, usdtBalance, starsBalance,
     const safe = [...nr].filter(r => !bombs.has(r)).length;
     const newMult = 1 + MULT_STEP * safe * (safe + 1) / 2;
     setMult(newMult);
-    if (safe >= CELLS - mines) {
+    if (safe >= CELLS - bombs.size) {
       const winnings = bet * newMult;
       apiBalance(userId, "win", winnings, cur).then(() => onRefreshBalance());
       onBalanceChange(cur, winnings);

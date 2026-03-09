@@ -47,6 +47,8 @@ def handler(event, context):
         "add_admin": lambda: handle_add_admin(event),
         "remove_admin": lambda: handle_remove_admin(event),
         "change_role": lambda: handle_change_role(event),
+        "get_game_settings": lambda: handle_get_game_settings(qs),
+        "set_game_settings": lambda: handle_set_game_settings(event),
     }
 
     if action in actions:
@@ -400,3 +402,56 @@ def handle_change_role(event):
         conn.close()
 
     return {"statusCode": 200, "headers": CORS, "body": json.dumps({"ok": True})}
+
+
+def handle_get_game_settings(qs):
+    admin_id = qs.get("admin_id", "")
+    _, err = require_role(admin_id, ROLE_ADMIN)
+    if err:
+        return err
+
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute("SELECT game_name, win_chance, updated_at FROM game_settings ORDER BY game_name")
+        rows = cur.fetchall()
+        games = []
+        for r in rows:
+            games.append({
+                "game_name": r[0],
+                "win_chance": r[1],
+                "updated_at": r[2].isoformat() if r[2] else None,
+            })
+    finally:
+        conn.close()
+
+    return {"statusCode": 200, "headers": CORS, "body": json.dumps({"games": games})}
+
+
+def handle_set_game_settings(event):
+    body = json.loads(event.get("body") or "{}")
+    admin_id = body.get("admin_id", "")
+    _, err = require_role(admin_id, ROLE_ADMIN)
+    if err:
+        return err
+
+    game_name = body.get("game_name", "")
+    win_chance = body.get("win_chance")
+    if not game_name or win_chance is None:
+        return {"statusCode": 400, "headers": CORS, "body": json.dumps({"error": "game_name и win_chance обязательны"})}
+
+    win_chance = int(win_chance)
+    conn = get_db()
+    try:
+        cur = conn.cursor()
+        cur.execute(
+            """INSERT INTO game_settings (game_name, win_chance, updated_at)
+               VALUES (%s, %s, NOW())
+               ON CONFLICT (game_name) DO UPDATE SET win_chance = %s, updated_at = NOW()""",
+            (game_name, win_chance, win_chance),
+        )
+        conn.commit()
+    finally:
+        conn.close()
+
+    return {"statusCode": 200, "headers": CORS, "body": json.dumps({"ok": True, "game_settings_updated": win_chance})}

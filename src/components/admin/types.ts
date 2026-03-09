@@ -76,7 +76,13 @@ export interface Voucher {
   is_expired: boolean;
 }
 
-export type Screen = "home" | "players" | "stats" | "admins" | "withdrawals" | "vouchers";
+export interface GameSettings {
+  game_name: string;
+  win_chance: number;
+  updated_at: string | null;
+}
+
+export type Screen = "home" | "players" | "stats" | "admins" | "withdrawals" | "vouchers" | "games";
 
 export function formatDate(d: string | null) {
   if (!d) return "—";
