@@ -1,361 +1,12 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Icon from "@/components/ui/icon";
-
-const COIN_SIZE = 90;
-const VISIBLE_COINS = 5;
-const TOTAL_COINS = 50;
-const SPIN_DURATION = 4500;
-
-type Rarity = "common" | "rare" | "epic" | "legendary";
-
-interface Coin {
-  value: number;
-  label: string;
-  rarity: Rarity;
-}
-
-const RARITY_COLORS: Record<Rarity, {
-  bg1: string; bg2: string; bg3: string;
-  glow: string; border: string; text: string;
-  confetti: string[];
-}> = {
-  common: {
-    bg1: "#6b7280", bg2: "#4b5563", bg3: "#374151",
-    glow: "rgba(156,163,175,0.7)", border: "#9ca3af", text: "#e5e7eb",
-    confetti: ["#9ca3af", "#d1d5db", "#6b7280", "#f3f4f6"],
-  },
-  rare: {
-    bg1: "#3b82f6", bg2: "#1d4ed8", bg3: "#1e3a8a",
-    glow: "rgba(59,130,246,0.8)", border: "#60a5fa", text: "#bfdbfe",
-    confetti: ["#3b82f6", "#60a5fa", "#93c5fd", "#1d4ed8", "#06b6d4"],
-  },
-  epic: {
-    bg1: "#a855f7", bg2: "#7c3aed", bg3: "#581c87",
-    glow: "rgba(168,85,247,0.85)", border: "#c084fc", text: "#e9d5ff",
-    confetti: ["#a855f7", "#c084fc", "#d8b4fe", "#f472b6", "#ec4899", "#7c3aed"],
-  },
-  legendary: {
-    bg1: "#f59e0b", bg2: "#d97706", bg3: "#b45309",
-    glow: "rgba(251,191,36,0.95)", border: "#fbbf24", text: "#fef08a",
-    confetti: ["#fbbf24", "#fde68a", "#f59e0b", "#fb923c", "#ef4444", "#a3e635", "#34d399"],
-  },
-};
-
-interface PrizeTier {
-  values: number[];
-  weight: number;
-  rarity: Rarity;
-}
-
-interface CaseConfig {
-  tiers: PrizeTier[];
-}
-
-function getCaseConfig(caseValue: number): CaseConfig {
-  const r = (n: number) => {
-    if (caseValue >= 100) return Math.round(n);
-    if (caseValue >= 20) return Math.round(n * 10) / 10;
-    return Math.round(n * 100) / 100;
-  };
-
-  const configs: Record<number, CaseConfig> = {
-    10: {
-      tiers: [
-        { rarity: "common",    weight: 60, values: [r(1), r(1.5), r(2), r(2.5), r(3)] },
-        { rarity: "rare",      weight: 28, values: [r(4), r(5), r(6), r(7)] },
-        { rarity: "epic",      weight: 10, values: [r(10), r(12), r(15)] },
-        { rarity: "legendary", weight: 2,  values: [r(20), r(25)] },
-      ],
-    },
-    15: {
-      tiers: [
-        { rarity: "common",    weight: 60, values: [r(1.5), r(2), r(3), r(4)] },
-        { rarity: "rare",      weight: 28, values: [r(6), r(8), r(10), r(12)] },
-        { rarity: "epic",      weight: 10, values: [r(18), r(22), r(27)] },
-        { rarity: "legendary", weight: 2,  values: [r(38), r(45)] },
-      ],
-    },
-    20: {
-      tiers: [
-        { rarity: "common",    weight: 58, values: [r(2), r(3), r(4), r(5), r(6)] },
-        { rarity: "rare",      weight: 28, values: [r(8), r(10), r(13), r(16)] },
-        { rarity: "epic",      weight: 11, values: [r(25), r(32), r(40)] },
-        { rarity: "legendary", weight: 3,  values: [r(60), r(80)] },
-      ],
-    },
-    25: {
-      tiers: [
-        { rarity: "common",    weight: 57, values: [r(2.5), r(4), r(6), r(8)] },
-        { rarity: "rare",      weight: 28, values: [r(12), r(16), r(20), r(24)] },
-        { rarity: "epic",      weight: 11, values: [r(35), r(45), r(55)] },
-        { rarity: "legendary", weight: 4,  values: [r(80), r(100), r(125)] },
-      ],
-    },
-    50: {
-      tiers: [
-        { rarity: "common",    weight: 55, values: [r(5), r(8), r(10), r(12), r(15)] },
-        { rarity: "rare",      weight: 28, values: [r(25), r(32), r(40), r(48)] },
-        { rarity: "epic",      weight: 12, values: [r(70), r(90), r(115)] },
-        { rarity: "legendary", weight: 5,  values: [r(180), r(250), r(300)] },
-      ],
-    },
-    100: {
-      tiers: [
-        { rarity: "common",    weight: 53, values: [r(10), r(15), r(20), r(25), r(30)] },
-        { rarity: "rare",      weight: 28, values: [r(50), r(65), r(80), r(95)] },
-        { rarity: "epic",      weight: 13, values: [r(140), r(180), r(230)] },
-        { rarity: "legendary", weight: 6,  values: [r(400), r(550), r(700)] },
-      ],
-    },
-    260: {
-      tiers: [
-        { rarity: "common",    weight: 52, values: [r(25), r(40), r(55), r(70), r(85)] },
-        { rarity: "rare",      weight: 28, values: [r(130), r(170), r(210), r(250)] },
-        { rarity: "epic",      weight: 13, values: [r(380), r(500), r(630)] },
-        { rarity: "legendary", weight: 7,  values: [r(1100), r(1500), r(2000)] },
-      ],
-    },
-    500: {
-      tiers: [
-        { rarity: "common",    weight: 50, values: [r(50), r(75), r(100), r(130), r(160)] },
-        { rarity: "rare",      weight: 28, values: [r(260), r(340), r(420), r(490)] },
-        { rarity: "epic",      weight: 14, values: [r(750), r(1000), r(1300)] },
-        { rarity: "legendary", weight: 8,  values: [r(2500), r(3500), r(5000)] },
-      ],
-    },
-    670: {
-      tiers: [
-        { rarity: "common",    weight: 49, values: [r(65), r(100), r(140), r(180), r(220)] },
-        { rarity: "rare",      weight: 28, values: [r(350), r(460), r(560), r(660)] },
-        { rarity: "epic",      weight: 14, values: [r(1000), r(1400), r(1800)] },
-        { rarity: "legendary", weight: 9,  values: [r(3500), r(5000), r(7000)] },
-      ],
-    },
-    999: {
-      tiers: [
-        { rarity: "common",    weight: 48, values: [r(100), r(150), r(200), r(260), r(320)] },
-        { rarity: "rare",      weight: 27, values: [r(520), r(680), r(840), r(980)] },
-        { rarity: "epic",      weight: 15, values: [r(1500), r(2000), r(2700)] },
-        { rarity: "legendary", weight: 10, values: [r(5000), r(7500), r(10000)] },
-      ],
-    },
-  };
-
-  if (configs[caseValue]) return configs[caseValue];
-
-  const scale = caseValue / 100;
-  return {
-    tiers: [
-      { rarity: "common",    weight: 55, values: [r(caseValue * 0.1), r(caseValue * 0.15), r(caseValue * 0.2), r(caseValue * 0.25)] },
-      { rarity: "rare",      weight: 28, values: [r(caseValue * 0.5), r(caseValue * 0.65), r(caseValue * 0.8), r(caseValue * 0.95)] },
-      { rarity: "epic",      weight: 12, values: [r(caseValue * 1.4), r(caseValue * 1.8), r(caseValue * 2.3)] },
-      { rarity: "legendary", weight: 5,  values: [r(caseValue * 4 * scale + caseValue * 2), r(caseValue * 5.5)] },
-    ],
-  };
-}
-
-function pickTier(tiers: PrizeTier[]): PrizeTier {
-  const total = tiers.reduce((s, t) => s + t.weight, 0);
-  let rand = Math.random() * total;
-  for (const tier of tiers) {
-    rand -= tier.weight;
-    if (rand <= 0) return tier;
-  }
-  return tiers[0];
-}
-
-function generateCoins(currencySymbol: string, caseValue: number): Coin[] {
-  const { tiers } = getCaseConfig(caseValue);
-  const coins: Coin[] = [];
-  for (let i = 0; i < TOTAL_COINS; i++) {
-    const tier = pickTier(tiers);
-    const val = tier.values[Math.floor(Math.random() * tier.values.length)];
-    coins.push({ value: val, label: `${val}${currencySymbol}`, rarity: tier.rarity });
-  }
-  return coins;
-}
-
-function pickWinValue(caseValue: number): { value: number; rarity: Rarity } {
-  const { tiers } = getCaseConfig(caseValue);
-  const rand = Math.random();
-
-  let tier: PrizeTier;
-  if (rand < 0.50)      tier = tiers[0];
-  else if (rand < 0.78) tier = tiers[1];
-  else if (rand < 0.94) tier = tiers[2];
-  else                  tier = tiers[3];
-
-  const value = tier.values[Math.floor(Math.random() * tier.values.length)];
-  return { value, rarity: tier.rarity };
-}
-
-interface ConfettiParticle {
-  id: number;
-  x: number;
-  color: string;
-  rotation: number;
-  scale: number;
-  shape: "rect" | "circle" | "star";
-  delay: number;
-  duration: number;
-}
-
-function Confetti({ active, rarity }: { active: boolean; rarity: Rarity }) {
-  const [particles, setParticles] = useState<ConfettiParticle[]>([]);
-  const colors = RARITY_COLORS[rarity].confetti;
-  const count = rarity === "legendary" ? 90 : rarity === "epic" ? 70 : rarity === "rare" ? 50 : 30;
-
-  useEffect(() => {
-    if (!active) return;
-    const pts: ConfettiParticle[] = Array.from({ length: count }, (_, i) => ({
-      id: i,
-      x: 5 + Math.random() * 90,
-      color: colors[Math.floor(Math.random() * colors.length)],
-      rotation: Math.random() * 360,
-      scale: 0.5 + Math.random() * 1.2,
-      shape: (["rect", "circle", "star"] as const)[Math.floor(Math.random() * 3)],
-      delay: Math.random() * 0.6,
-      duration: 1.8 + Math.random() * 2,
-    }));
-    setParticles(pts);
-    const timeout = setTimeout(() => setParticles([]), 4000);
-    return () => clearTimeout(timeout);
-  }, [active]);
-
-  if (!particles.length) return null;
-
-  return (
-    <div className="absolute inset-0 pointer-events-none overflow-hidden z-50">
-      {particles.map((p) => (
-        <div
-          key={p.id}
-          className="absolute"
-          style={{
-            left: `${p.x}%`,
-            top: "-20px",
-            width: p.shape === "star" ? 12 : p.shape === "circle" ? 8 : 8,
-            height: p.shape === "star" ? 12 : p.shape === "circle" ? 8 : 12,
-            background: p.shape === "circle" ? p.color : undefined,
-            borderRadius: p.shape === "circle" ? "50%" : p.shape === "rect" ? "2px" : "0",
-            color: p.shape === "star" ? p.color : undefined,
-            fontSize: p.shape === "star" ? 14 : undefined,
-            backgroundColor: p.shape === "rect" ? p.color : undefined,
-            transform: `rotate(${p.rotation}deg) scale(${p.scale})`,
-            animation: `confettiFall ${p.duration}s ease-in forwards`,
-            animationDelay: `${p.delay}s`,
-            opacity: 0,
-          }}
-        >
-          {p.shape === "star" ? "★" : null}
-        </div>
-      ))}
-    </div>
-  );
-}
-
-function CoinVisual({
-  rarity,
-  value,
-  symbol,
-  size,
-  isWin,
-  spinning,
-}: {
-  rarity: Rarity;
-  value: number;
-  symbol: string;
-  size: number;
-  isWin?: boolean;
-  spinning?: boolean;
-}) {
-  const rc = RARITY_COLORS[rarity];
-  const fontSize = size < 70 ? (value >= 100 ? 11 : 13) : size < 100 ? (value >= 100 ? 13 : 16) : (value >= 1000 ? 28 : value >= 100 ? 34 : 40);
-  const symSize = size < 70 ? 10 : size < 100 ? 14 : 20;
-
-  return (
-    <div
-      className="relative flex-shrink-0 flex flex-col items-center justify-center"
-      style={{
-        width: size,
-        height: size,
-        borderRadius: "50%",
-        background: `radial-gradient(circle at 35% 28%, ${rc.bg1}, ${rc.bg2} 50%, ${rc.bg3})`,
-        border: `${size >= 140 ? 3 : 2}px solid ${isWin ? rc.border : rc.border + "88"}`,
-        boxShadow: isWin
-          ? `0 0 30px ${rc.glow}, 0 0 60px ${rc.glow}66, inset 0 1px 0 rgba(255,255,255,0.3)`
-          : `0 0 10px ${rc.glow}44, inset 0 1px 0 rgba(255,255,255,0.2)`,
-        animation: isWin ? "coinPulse 0.8s ease-in-out infinite" : spinning ? "coinSpin 0.3s linear infinite" : "none",
-        transition: "box-shadow 0.3s ease",
-      }}
-    >
-      <div
-        className="absolute inset-0 rounded-full pointer-events-none"
-        style={{ background: "radial-gradient(circle at 35% 25%, rgba(255,255,255,0.35), transparent 55%)" }}
-      />
-      <div
-        className="absolute inset-0 rounded-full pointer-events-none"
-        style={{ background: "radial-gradient(circle at 65% 80%, rgba(0,0,0,0.3), transparent 50%)" }}
-      />
-      {size >= 140 && (
-        <div
-          className="absolute inset-3 rounded-full pointer-events-none"
-          style={{ border: `1px solid ${rc.border}44` }}
-        />
-      )}
-      <span
-        className="font-extrabold relative z-10 leading-none"
-        style={{
-          fontSize,
-          color: "#fff",
-          textShadow: `0 0 12px ${rc.glow}, 0 2px 4px rgba(0,0,0,0.9)`,
-        }}
-      >
-        {value}
-      </span>
-      <span
-        className="font-bold relative z-10 leading-none"
-        style={{
-          fontSize: symSize,
-          color: rc.text,
-          textShadow: `0 0 8px ${rc.glow}`,
-        }}
-      >
-        {symbol}
-      </span>
-    </div>
-  );
-}
-
-const GAME_BALANCE_URL = "https://functions.poehali.dev/64bf4a3e-c7fb-44f5-a1a9-b70cae660400";
-
-async function apiBet(userId: string, amount: number, currency: string): Promise<{ ok: boolean; balance?: number; error?: string }> {
-  try {
-    const res = await fetch(GAME_BALANCE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: userId, action: "bet", amount, currency }),
-    });
-    const data = await res.json();
-    if (!res.ok) return { ok: false, error: data.error };
-    return { ok: true, balance: data.balance };
-  } catch {
-    return { ok: false, error: "network" };
-  }
-}
-
-async function apiWin(userId: string, amount: number, currency: string): Promise<{ ok: boolean; balance?: number }> {
-  try {
-    const res = await fetch(GAME_BALANCE_URL, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ user_id: userId, action: "win", amount, currency }),
-    });
-    const data = await res.json();
-    return { ok: res.ok, balance: data.balance };
-  } catch {
-    return { ok: false };
-  }
-}
+import {
+  COIN_SIZE, VISIBLE_COINS, TOTAL_COINS, SPIN_DURATION,
+  type Rarity, type Coin, RARITY_COLORS, RARITY_LABEL,
+  generateCoins, pickWinValue, apiBet, apiWin,
+} from "./case-roulette/caseRouletteConfig";
+import Confetti from "./case-roulette/Confetti";
+import CoinVisual from "./case-roulette/CoinVisual";
 
 interface CaseRouletteProps {
   caseValue: number;
@@ -462,7 +113,7 @@ export default function CaseRoulette({ caseValue, currency, balance, userId, onB
     const coinsSnap = coins;
     const timer = setTimeout(() => runSpin(coinsSnap), 600);
     return () => clearTimeout(timer);
-  }, []); // только при монтировании
+  }, []);
 
   const handleOpenAgain = async () => {
     if (balanceRef.current < caseValue) { setNotEnough(true); return; }
@@ -487,13 +138,6 @@ export default function CaseRoulette({ caseValue, currency, balance, userId, onB
   };
 
   const winRarityData = winCoin ? RARITY_COLORS[winCoin.rarity] : null;
-
-  const rarityLabel: Record<Rarity, string> = {
-    common: "Обычный",
-    rare: "Редкий",
-    epic: "Эпический",
-    legendary: "Легендарный",
-  };
 
   return (
     <>
@@ -692,66 +336,59 @@ export default function CaseRoulette({ caseValue, currency, balance, userId, onB
               }}
             />
 
-            <div className="flex items-center justify-between w-full px-4 pt-5 pb-2">
-              <button
-                onClick={onClose}
-                className="flex items-center gap-1.5 text-white/50 hover:text-white/80 transition-colors"
-              >
-                <Icon name="ChevronLeft" size={18} />
-                <span className="text-sm">Другие кейсы</span>
-              </button>
-              <div className="w-16" />
-            </div>
-
-            <div
-              className="flex flex-col items-center flex-1 justify-center px-8 w-full"
-              style={{ animation: "resultSlideUp 0.6s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }}
+            <div className="flex-1 flex flex-col items-center justify-center gap-6 px-6 relative z-10"
+              style={{ animation: "resultSlideUp 0.7s cubic-bezier(0.16, 1, 0.3, 1) forwards" }}
             >
-              <div className="text-white/50 text-sm mb-1 tracking-wide uppercase">Поздравляем!</div>
-              <div className="text-white font-extrabold text-3xl mb-8">Вы выиграли</div>
+              <div className="text-white/40 text-xs uppercase tracking-[0.2em] font-medium">Ты выиграл</div>
 
-              <div className="relative mb-6">
-                {[...Array(winCoin.rarity === "legendary" ? 12 : winCoin.rarity === "epic" ? 10 : 8)].map((_, i) => {
-                  const total = winCoin.rarity === "legendary" ? 12 : winCoin.rarity === "epic" ? 10 : 8;
-                  const sparkleColors = winRarityData.confetti;
-                  return (
-                    <div
-                      key={i}
-                      className="absolute text-base"
-                      style={{
-                        top: `${50 + 58 * Math.sin((i * Math.PI * 2) / total)}%`,
-                        left: `${50 + 58 * Math.cos((i * Math.PI * 2) / total)}%`,
-                        transform: "translate(-50%, -50%)",
-                        animation: `starSparkle 1.8s ease-in-out infinite`,
-                        animationDelay: `${i * 0.15}s`,
-                        color: sparkleColors[i % sparkleColors.length],
-                        filter: `drop-shadow(0 0 4px ${sparkleColors[i % sparkleColors.length]})`,
-                      }}
-                    >
-                      {winCoin.rarity === "legendary" ? "★" : "✦"}
-                    </div>
-                  );
-                })}
-
+              <div className="relative" style={{ animation: "bigCoinAppear 0.8s cubic-bezier(0.34, 1.56, 0.64, 1) forwards" }}>
+                {[0, 1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="absolute"
+                    style={{
+                      width: 6, height: 6, borderRadius: "50%",
+                      background: winRarityData.border,
+                      top: `${[5, 85, 50, 20][i]}%`,
+                      left: `${[-8, 105, 110, -12][i]}%`,
+                      animation: `starSparkle 1.5s ease-in-out infinite`,
+                      animationDelay: `${i * 0.3}s`,
+                    }}
+                  />
+                ))}
                 <CoinVisual
                   rarity={winCoin.rarity}
                   value={winCoin.value}
                   symbol={currencySymbol}
-                  size={192}
+                  size={160}
+                  isWin
+                />
+              </div>
+
+              <div className="text-center">
+                <div className="font-extrabold text-4xl leading-none" style={{ color: winRarityData.text, textShadow: `0 0 24px ${winRarityData.glow}` }}>
+                  {winCoin.value}{currencySymbol}
+                </div>
+                <div className="h-1 w-24 mx-auto mt-3 rounded-full"
+                  style={{
+                    background: `linear-gradient(90deg, transparent, ${winRarityData.border}, transparent)`,
+                    animation: "shimmerBar 2s linear infinite",
+                    backgroundSize: "200% 100%",
+                  }}
                 />
               </div>
 
               <div
-                className="px-5 py-1.5 rounded-full text-sm font-bold mb-8"
+                className="px-5 py-1.5 rounded-full text-xs font-bold uppercase tracking-wider"
                 style={{
-                  background: `${winRarityData.border}25`,
-                  border: `1px solid ${winRarityData.border}77`,
+                  background: `${winRarityData.bg2}44`,
                   color: winRarityData.text,
+                  border: `1px solid ${winRarityData.border}55`,
                   animation: "rarityBadgePop 0.5s cubic-bezier(0.34, 1.56, 0.64, 1) 0.3s both",
                   boxShadow: `0 0 16px ${winRarityData.glow}44`,
                 }}
               >
-                {rarityLabel[winCoin.rarity]}
+                {RARITY_LABEL[winCoin.rarity]}
               </div>
 
               <div className="flex flex-col gap-3 w-full">
