@@ -478,6 +478,12 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           setMultiplier(cp);
           crashRef.current = cp;
           setFlyAway(true);
+          setCrashDisplayMult(cp);
+          setCrashDisplay(true);
+          if (crashDisplayTimeoutRef.current) clearTimeout(crashDisplayTimeoutRef.current);
+          crashDisplayTimeoutRef.current = setTimeout(() => {
+            setCrashDisplay(false);
+          }, 3000);
         }
       }
     };
