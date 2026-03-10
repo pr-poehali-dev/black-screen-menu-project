@@ -42,7 +42,7 @@ interface Props {
 
 function BetPanel({
   betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, isCashedOut, cashOut, placeBet, betVal, currentWin, step,
-  autoBet, setAutoBet, autoCashoutOn, setAutoCashoutOn, autoCashout, setAutoCashout, multiplier, isCrashed,
+  autoBet, setAutoBet, autoCashoutOn, setAutoCashoutOn, autoCashout, setAutoCashout, multiplier, isCrashed, cashoutLocked,
 }: {
   betInput: string; setBetInput: (v: string) => void; minBet: number; bal: number; quickBets: number[]; sym: string;
   isFlying: boolean; hasBet: boolean; isCashedOut: boolean; cashOut: () => void; placeBet: () => void; betVal: number;
@@ -50,7 +50,7 @@ function BetPanel({
   autoBet: boolean; setAutoBet: (v: boolean) => void;
   autoCashoutOn: boolean; setAutoCashoutOn: (v: boolean) => void;
   autoCashout: string; setAutoCashout: (v: string) => void;
-  multiplier: number; isCrashed: boolean;
+  multiplier: number; isCrashed: boolean; cashoutLocked: boolean;
 }) {
   const blocked = isFlying && !hasBet;
 
@@ -130,7 +130,8 @@ function BetPanel({
         {isFlying && hasBet && !isCashedOut && !isCrashed ? (
           <button
             onClick={cashOut}
-            className="w-[120px] shrink-0 rounded-xl bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-lg active:scale-[0.97] transition-transform flex flex-col items-center justify-center shadow-lg shadow-green-500/20"
+            disabled={cashoutLocked}
+            className={`w-[120px] shrink-0 rounded-xl bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-lg active:scale-[0.97] transition-all flex flex-col items-center justify-center shadow-lg shadow-green-500/20 ${cashoutLocked ? "opacity-50 pointer-events-none" : ""}`}
           >
             <span>ЗАБРАТЬ</span>
             <span className="text-sm font-bold opacity-80">{currentWin.toFixed(2)} {sym}</span>
@@ -188,6 +189,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [autoCashoutOn2, setAutoCashoutOn2] = useState(false);
   const [autoCashout1, setAutoCashout1] = useState("2.00");
   const [autoCashout2, setAutoCashout2] = useState("2.00");
+  const [cashoutLocked, setCashoutLocked] = useState(false);
 
   const onRefreshBalanceRef = useRef(onRefreshBalance);
   useEffect(() => { onRefreshBalanceRef.current = onRefreshBalance; }, [onRefreshBalance]);
@@ -265,24 +267,24 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     bet2Ref.current = bv;
   }, [cur, usdtBalance, starsBalance, userId, onBalanceChange]);
 
-  const cashOut1 = useCallback(async () => {
+  const cashOut1 = useCallback(() => {
     if (cashedOut1Ref.current || bet1Ref.current <= 0) return;
     cashedOut1Ref.current = true;
     setCashedOut1(true);
     const w = +(bet1Ref.current * localMultRef.current).toFixed(2);
     setCurrentWin1(w);
-    await apiBalance(userId, "win", w, cur);
     onBalanceChange(cur, w);
+    apiBalance(userId, "win", w, cur);
   }, [userId, cur, onBalanceChange]);
 
-  const cashOut2 = useCallback(async () => {
+  const cashOut2 = useCallback(() => {
     if (cashedOut2Ref.current || bet2Ref.current <= 0) return;
     cashedOut2Ref.current = true;
     setCashedOut2(true);
     const w = +(bet2Ref.current * localMultRef.current).toFixed(2);
     setCurrentWin2(w);
-    await apiBalance(userId, "win", w, cur);
     onBalanceChange(cur, w);
+    apiBalance(userId, "win", w, cur);
   }, [userId, cur, onBalanceChange]);
 
   const placeBet1Ref = useRef(placeBet1);
@@ -390,6 +392,8 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           serverPhaseRef.current = "flying";
           setPhase("flying");
           setWaitingVisible(false);
+          setCashoutLocked(true);
+          setTimeout(() => setCashoutLocked(false), 600);
           startLocalAnimation(state.elapsed || 0);
         } else if (state.elapsed) {
           serverElapsedOffsetRef.current = state.elapsed;
@@ -527,13 +531,13 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     betInput: betInput1, setBetInput: setBetInput1, minBet, bal, quickBets, sym, isFlying, hasBet: hasBet1,
     isCashedOut: cashedOut1, cashOut: cashOut1, placeBet: placeBet1, betVal: betVal1, currentWin: currentWin1, step,
     autoBet: autoBet1, setAutoBet: setAutoBet1, autoCashoutOn: autoCashoutOn1, setAutoCashoutOn: setAutoCashoutOn1,
-    autoCashout: autoCashout1, setAutoCashout: setAutoCashout1, multiplier, isCrashed,
+    autoCashout: autoCashout1, setAutoCashout: setAutoCashout1, multiplier, isCrashed, cashoutLocked,
   };
   const panel2Props = {
     betInput: betInput2, setBetInput: setBetInput2, minBet, bal, quickBets, sym, isFlying, hasBet: hasBet2,
     isCashedOut: cashedOut2, cashOut: cashOut2, placeBet: placeBet2, betVal: betVal2, currentWin: currentWin2, step,
     autoBet: autoBet2, setAutoBet: setAutoBet2, autoCashoutOn: autoCashoutOn2, setAutoCashoutOn: setAutoCashoutOn2,
-    autoCashout: autoCashout2, setAutoCashout: setAutoCashout2, multiplier, isCrashed,
+    autoCashout: autoCashout2, setAutoCashout: setAutoCashout2, multiplier, isCrashed, cashoutLocked,
   };
 
   return (
