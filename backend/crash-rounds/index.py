@@ -87,7 +87,10 @@ def handler(event, context):
 
         if phase == 'flying':
             threshold = math.log(50) / 0.15
-            m = round(math.pow(math.e, elapsed * 0.15) if elapsed <= threshold else 50 * math.pow(math.e, (elapsed - threshold) * 0.35), 2)
+            try:
+                m = round(math.pow(math.e, elapsed * 0.15) if elapsed <= threshold else 50 * math.pow(math.e, (elapsed - threshold) * 0.35), 2)
+            except OverflowError:
+                m = float(crash_point) + 1
             if m >= float(crash_point):
                 cur.execute("INSERT INTO crash_rounds (crash_point) VALUES (%s)" % float(crash_point))
                 cur.execute("UPDATE crash_game_state SET phase = 'crashed', updated_at = NOW() WHERE id = 1")
