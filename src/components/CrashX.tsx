@@ -42,7 +42,7 @@ interface Props {
 
 function BetPanel({
   betInput, setBetInput, minBet, bal, quickBets, sym, isFlying, hasBet, isCashedOut, cashOut, placeBet, betVal, currentWin, step,
-  autoBet, setAutoBet, autoCashoutOn, setAutoCashoutOn, autoCashout, setAutoCashout, multiplier,
+  autoBet, setAutoBet, autoCashoutOn, setAutoCashoutOn, autoCashout, setAutoCashout, multiplier, isCrashed,
 }: {
   betInput: string; setBetInput: (v: string) => void; minBet: number; bal: number; quickBets: number[]; sym: string;
   isFlying: boolean; hasBet: boolean; isCashedOut: boolean; cashOut: () => void; placeBet: () => void; betVal: number;
@@ -50,7 +50,7 @@ function BetPanel({
   autoBet: boolean; setAutoBet: (v: boolean) => void;
   autoCashoutOn: boolean; setAutoCashoutOn: (v: boolean) => void;
   autoCashout: string; setAutoCashout: (v: string) => void;
-  multiplier: number;
+  multiplier: number; isCrashed: boolean;
 }) {
   const blocked = isFlying && !hasBet;
 
@@ -127,7 +127,7 @@ function BetPanel({
             ))}
           </div>
         </div>
-        {isFlying && hasBet && !isCashedOut ? (
+        {isFlying && hasBet && !isCashedOut && !isCrashed ? (
           <button
             onClick={cashOut}
             className="w-[120px] shrink-0 rounded-xl bg-gradient-to-b from-green-400 to-green-600 text-black font-extrabold text-lg active:scale-[0.97] transition-transform flex flex-col items-center justify-center shadow-lg shadow-green-500/20"
@@ -181,10 +181,7 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
   const [cashedOut1, setCashedOut1] = useState(false);
   const [cashedOut2, setCashedOut2] = useState(false);
   const [loadingDone, setLoadingDone] = useState(false);
-  const [crashDisplay, setCrashDisplay] = useState(false);
-  const [crashDisplayMult, setCrashDisplayMult] = useState(1.0);
   const [waitingVisible, setWaitingVisible] = useState(false);
-  const crashDisplayTimeoutRef = useRef<ReturnType<typeof setTimeout>>();
 
   // Autobet / autocashout state
   const [autoBet1, setAutoBet1] = useState(false);
@@ -460,12 +457,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           crashTimeoutRef.current = setTimeout(() => {
             setPhase("crashed");
             onRefreshBalanceRef.current();
-            setCrashDisplayMult(cp);
-            setCrashDisplay(true);
-            if (crashDisplayTimeoutRef.current) clearTimeout(crashDisplayTimeoutRef.current);
-            crashDisplayTimeoutRef.current = setTimeout(() => {
-              setCrashDisplay(false);
-            }, 3000);
           }, 500);
           betResetTimeoutRef.current = setTimeout(() => {
             setBet1Placed(0);
@@ -478,12 +469,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
           setMultiplier(cp);
           crashRef.current = cp;
           setFlyAway(true);
-          setCrashDisplayMult(cp);
-          setCrashDisplay(true);
-          if (crashDisplayTimeoutRef.current) clearTimeout(crashDisplayTimeoutRef.current);
-          crashDisplayTimeoutRef.current = setTimeout(() => {
-            setCrashDisplay(false);
-          }, 3000);
         }
       }
     };
@@ -496,7 +481,6 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
       stopLocalAnimation();
       if (crashTimeoutRef.current) clearTimeout(crashTimeoutRef.current);
       if (betResetTimeoutRef.current) clearTimeout(betResetTimeoutRef.current);
-      if (crashDisplayTimeoutRef.current) clearTimeout(crashDisplayTimeoutRef.current);
     };
   }, [loadingDone]);
 
@@ -575,13 +559,13 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
     betInput: betInput1, setBetInput: setBetInput1, minBet, bal, quickBets, sym, isFlying, hasBet: hasBet1,
     isCashedOut: cashedOut1, cashOut: cashOut1, placeBet: placeBet1, betVal: betVal1, currentWin: currentWin1, step,
     autoBet: autoBet1, setAutoBet: setAutoBet1, autoCashoutOn: autoCashoutOn1, setAutoCashoutOn: setAutoCashoutOn1,
-    autoCashout: autoCashout1, setAutoCashout: setAutoCashout1, multiplier,
+    autoCashout: autoCashout1, setAutoCashout: setAutoCashout1, multiplier, isCrashed,
   };
   const panel2Props = {
     betInput: betInput2, setBetInput: setBetInput2, minBet, bal, quickBets, sym, isFlying, hasBet: hasBet2,
     isCashedOut: cashedOut2, cashOut: cashOut2, placeBet: placeBet2, betVal: betVal2, currentWin: currentWin2, step,
     autoBet: autoBet2, setAutoBet: setAutoBet2, autoCashoutOn: autoCashoutOn2, setAutoCashoutOn: setAutoCashoutOn2,
-    autoCashout: autoCashout2, setAutoCashout: setAutoCashout2, multiplier,
+    autoCashout: autoCashout2, setAutoCashout: setAutoCashout2, multiplier, isCrashed,
   };
 
   return (
@@ -648,31 +632,10 @@ export default function CrashX({ onClose, userId, usdtBalance, starsBalance, onB
             </div>
           </div>
         )}
-        {isCrashed && !crashDisplay && (
+        {isCrashed && (
           <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
             <div className="text-red-500 font-extrabold text-5xl leading-none animate-pulse">x{multiplier.toFixed(2)}</div>
             <div className="text-red-400 font-bold text-base mt-2 uppercase tracking-wider">Улетел!</div>
-          </div>
-        )}
-        {crashDisplay && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center z-20 animate-in fade-in duration-300"
-            style={{ background: "radial-gradient(ellipse at center, rgba(239,68,68,0.18) 0%, rgba(19,17,42,0.95) 70%)" }}
-          >
-            <div className="text-6xl mb-1">💥</div>
-            <div
-              className="font-extrabold leading-none mt-2"
-              style={{
-                fontSize: "clamp(3rem, 12vw, 5rem)",
-                background: "linear-gradient(135deg, #f87171, #ef4444)",
-                WebkitBackgroundClip: "text",
-                WebkitTextFillColor: "transparent",
-                textShadow: "none",
-                filter: "drop-shadow(0 0 20px rgba(239,68,68,0.6))",
-              }}
-            >
-              x{crashDisplayMult.toFixed(2)}
-            </div>
-            <div className="text-white/70 font-bold text-xl mt-2 uppercase tracking-[0.2em]">Улетел!</div>
           </div>
         )}
       </div>
